@@ -1,0 +1,1 @@
+umasm -o calc40.um stack.ums printd.ums calc40.ums callmain.ums

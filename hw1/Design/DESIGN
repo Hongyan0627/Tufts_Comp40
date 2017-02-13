@@ -1,0 +1,157 @@
+##############################################################################
+# Simlines Design Document                                                   #
+# Purpose: provide a thorough description of our plan to build the           #
+# simlines program.                                                          #
+# By: Hongyan Wang and Derick Yang                                           #
+# Date: January 28, 2016                                                     #
+##############################################################################
+
+##############################################################################
+#                          The Problem                                       #
+##############################################################################
+Given a number of filenames, open the files and compare the lines
+amongst the files. Print groups of "similar" lines, specifying where each line
+was found.
+
+##############################################################################
+#                   The Steps we will take to solve it                       #
+##############################################################################
+Steps to break down:
+    1. Open the files, placing into filestreams
+    2. Read each line
+    3. Simplify each line into space-separated words
+    4. Insert each line into our hash table, checking
+        if the key exists before inserting into the
+        slot
+    5. Print each match group
+        * Format each line in the match group
+
+##############################################################################
+#                           Data structures                                  #
+##############################################################################
+* Hanson Atom: a pointer to a char* that acts as the key for the
+hash table. The string that the Atom points to is a list of words 
+corresponding to a match group. We will use atom_string() to create new 
+instances of Atoms. There are no void pointers in the Atom interface.
+* Struct 'Occurrence': each Occurrence will have a char* filename, and an int
+line number, representing an occurrence of a line amongst the lines we have
+read.
+* Hanson Table: will contain keys for each possible "plain" line. A "plain" 
+line is a sequence of words separated by spaces, which is what every line 
+boils down to. The keys in the table will be Hanson Atom pointers to the 
+strings. The values corresponding to these keys will be pointers to Hanson 
+Seq, which will contain a number of structs. 
+We will use the following functions: 
+    * Table Table_new(int hint, int cmp(const void *x, const void *y), 
+    unsigned hash(const void *key)): x and y are Atoms described above 
+    pointing to the list of words for the match group. For the hash, we
+    will use a null function pointer, as this implies we are using Atoms
+    as keys.
+    * void *Table_put(Table table, const void *key, void *value): key is an 
+    Atom described above, pointing to the list of words for the match group.
+    value is a pointer to a Hanson Sequence described below. Returns the 
+    pointer to previous Sequence if the Table already holds the key. 
+    Otherwise returns null.
+    * void *Table_get(Table table, const void *key): key is an Atom as
+    described above. Returns the pointer to the associated Sequence if found,
+    Otherwise, returns null.
+    * void Table_free(Table *table) 
+* Hanson Sequence: a Sequence of Occurrences (as defined above) for the 
+string key. Each sequence will be pointed to by the value in the hash table.
+We will use the following functions:
+    * Sequence Seq_new(int hint)
+    * void *Seq_addhi(Sequence seq, void *x): x is a pointer to an struct 
+    Occurrence that we want to add. The function also returns x.
+    * void *Seq_remlo(Sequence seq): returns a pointer to the struct
+    Occurrence that we removed. 
+    * void Seq_free(Sequence *seq)
+
+##############################################################################
+#                 Finding if line is in match group                          #
+##############################################################################
+Before comparing, we want to clean the line of extraneous characters. We then
+use Hanson's Atom interface to receive a pointer. We then hash this pointer,
+and see if there is already a key in the table corresponding to it. We use 
+Atom here because we can compare the string easily.
+
+##############################################################################
+#                           Information to keep                              #
+##############################################################################
+We will store the filename and line number in a struct, which will then be 
+placed in a Sequence for easy access later.
+
+##############################################################################
+#                          Keeping things in order                           #
+##############################################################################
+We will utilize a Hanson Sequence to keep the Occurrences in each match group 
+in order. These Sequences will be pointed to by values in the hash table.
+
+##############################################################################
+#                                Invariants                                  #
+##############################################################################
+* Our table should only expand if a new unique line was read in. 
+* If a key exists in a table, the value pointer must point to a sequence with
+at least one element.
+* The number of unique Atoms that we have corresponds to the number of unique
+lines that we have read in.
+* Every key (Atom) should point to a "clean" string, free of non-word 
+characters.
+
+##############################################################################
+#                      Creating Simlines Groups                              #
+##############################################################################
+We will use the keys (Atoms) in the hash table, and each value that has more 
+than one element in the Sequence will be a simlines group. The group words 
+will be in the key, and the group values will contain the Occurrences.
+
+##############################################################################
+#                             Writing Output                                 #
+##############################################################################
+We will use Table_get() to get the groups, and if the group contains more 
+than one occurrence, we print each struct Occurrence in the sequence using 
+Seq_remlo(). 
+
+##############################################################################
+#                           Testing Part B                                   #
+##############################################################################
+We created a main function for Part B to test the readaline function. In the 
+main, we read in a filename and passed the address of a variable we want to
+modify. We will test the following cases:
+    * Empty file: we expect to get output of 0, with a *datap pointing to an 
+    empty string.
+    * Normal test cases: a file with multiple lines in it, ranging in length
+    from 1 to 500 characters long (the newline character is a character). We 
+    expect the output to be the length of the line, and datap at each 
+    iteration to contain a pointer to a string containing the text of the 
+    line.
+    * File of newline characters: Every character in the file is a newline
+    character. We expect each output to be 0, and each datap pointing to an
+    empty string.
+    * Test dynamic expansion: a file with 199, 200, 201 character lines in it
+    to ensure that our expansion is functional.
+
+##############################################################################
+#                           Testing Part C                                   #
+##############################################################################
+We will create main functions to test each of our functions.
+    * char *clean_line(char *line): we will test this using C I/O with the
+    following cases:
+        * Normal line: Input is words separated by a variety of non-word 
+        characters. Output is a space-separated list of the same words
+        * Empty line: Input is a newline character or EOF character. Output 
+        should be a user input error.
+        * Empty string: Input is an empty string. Output should be an empty 
+        string.
+    * void print_group(char *words, Sequence occurrences):
+        * Normal group: Input is a string and a Sequence of 2 or more 
+        occurrences. The function should print a formatted list of 
+        occurrences.
+        * Empty occurrences: user input error if number of occurrences < 2
+    Overall test:
+        * 0 arguments: should not print anything
+        * unique filenames: should print a list of simlines formatted 
+        correctly
+        * repeated filenames: should open the repeated file multiple times,
+        and each line in the repeated filename should appear as a simlines 
+        group.
+        * files with non-words: nothing should be printed for those lines.

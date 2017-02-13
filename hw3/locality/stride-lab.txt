@@ -1,0 +1,134 @@
+                 COMP 40 Lab: Striding Through Memory
+        (for groups of two -- work with your locality partner)
+
+
+
++--------------------------------------------------------+
+|Keeper of the record: Peter Vondras                     |
+|--------------------------------------------------------|
+|Lab partner: Hongyan Wang                               |
++--------------------------------------------------------+
+
+
+Please edit this document to include your answers to the questions
+below, and use the submit40-lab-strides script to submit your
+answers. 
+
+Read these questions before you start doing the lab experiments, and
+use these questions to guide your choice of test cases. Remember, the
+particular tests listed in the instructions are just  hints for getting
+you started: you should run any experiments that you think will help
+you answer these questions or understand how the cache works.
+
+Don't worry if you aren't sure you can get all of these questions
+right. The goal here is to start teaching you to do what cash
+designers do: to think step-by-step through what happens in a cache as
+a program runs, he's actual simulations to determine which designs
+perform best on which applications, and from them to extract general
+principles of cache design.
+
+FOR THESE FIRST FEW QUESTIONS, ASSUME A DIRECT MAPPED CACHE (the
+-assoc 1 setting for testcachesim, which is the default).
+
+Cache Size
+----------
+
+Q1a: If you know the block size in bytes for a cache and the number of
+     lines in the cache, what will be the total size of the cache in
+     bytes? 
+
+     - block size * lines
+
+Q1b: For testcachesim, describe in detail how performance changes as
+     the size of the cache gets larger, presuming the size  of the
+     test array remains the same?  
+
+     - As the cache gets larger, AND the blocksize gets larger, the amount of
+       read_to_write misses decreases which will increase speed. Also, if the
+       cache becomes large enough to hold the entire array, the speed is ver
+       high for passes 2-4.
+
+Q1c. Is there a point beyond which performance stops improving as
+     cache size increases? Why?
+
+     - If the cache can hold the array of interest then growing the cache will 
+       not help. This is because everything is already running in highspeed,
+       cache storage.
+
+Q1d. Sometimes performance is excellent (that is, the cache gives us a
+     very good speed up) but then making the test array just a little
+     bigger reduces performance dramatically. Why?
+
+     - The reason for this is that the new element is evicting elements that
+       we used to be able to fit in the cache.
+
+
+Block sizes
+-----------
+
+In this section, assume that the total size of the cache we can build
+is fixed, but that we get to make choices as to whether to have
+fewer lines with bigger blocks, or more lines with smaller.
+
+Q2a  Are bigger blocks always better? Worse? Assuming the total size
+     of the cache remains the same, and for an application like
+     testcachesim, which block size is best?
+
+     - For the initial testchachesim, larger blocks are better becuase we are 
+       reading in order and therefore this will reduce write-misses. In other
+       cases, maximum block sizes might be wasteful because it reduces the 
+       diversity of data that we can use in the cache at the same time.
+
+Q3.  Would your answer be different for teststride than it was for
+     testcachesim?  Why?
+
+     - A small block size might be advantageous for strides that repeat a
+       pattern. This is because we might be able to have an entire pass cached
+       if we did not waist space.
+
+Writing data
+------------
+
+Q4.  Reread the part of the instructions that explains the
+     "Reads_for_writes" count in your cache statistics. Is there a
+     value of the block size that will make "Reads_for_writes" zero?
+     If you understand this, then you understand a lot about how
+     "store-in" caches work.
+
+    - If the blocksize is the same as the arraysize, you can reduce the
+      read_for_write to 1 but never to 0. You must have at least one initial
+      read_for_write to "warm up" the cache.
+
+Q5.  Explain why, for applications that update memory repeatedly, a cache that
+     performs better may finish with more dirty blocks than a cache
+     that does not perform well on the same application.
+
+     - This is because "store in" or "write back" behavior leaves changes in
+       cache, only updating main memory when a dirty block is being evicted.
+       This will result in many more dirty blocks than "write through" as
+       "write through" does not ever store dirty blocks, it transfers all writes
+       all the way to main memory.
+
+=================================================================
+                     Associative caches
+=================================================================
+
+Q6.  Can you describe a situation in which a fully associative cache
+     will outperform a direct-mapped cache?
+
+     - This will happen when blocks which all should fit in the cache map to the
+       same line in a direct-mapped cache. This will result in many evictions
+       and misses.
+
+
+
+
+
+
+
+
+
+
+Submit this file using script
+
+       submit40-lab-strides

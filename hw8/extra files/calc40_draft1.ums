@@ -1,0 +1,158 @@
+// Comp40 Homework 8
+// By: Josie Barth and Hongyan Wang
+// April 23rd 2016
+
+
+.section init
+        .temps r5, r6, r7
+        jumptable: // jump table "points" to the begining of the jumptable
+                .space 256 //creates space for 256 ASCII chars
+.section text
+        
+        // assumes r1 holds the users input character
+        input_error:
+                output "Unknown character "
+                output r1
+                output " \n"
+                goto exit_program
+
+.section text
+        
+        // stack underflow - 1 elem
+        stack_underflow_1:
+                output "Stack underflow---expected at least 1 element\n"
+                halt
+                
+.section text
+        
+        // stack underflow - 2 elem
+        stack_underflow_2:
+                output "Stack underflow---expected at least 2 elements\n"
+                halt
+
+.section text
+        waiting:
+                r1 := input()
+                goto waiting_with_character
+.section text
+
+        // invariant: expects parameter is in r1
+        waiting_with_character:
+                r5 := ~r1 // tests for EOF
+                r4 := exit_program // if EOF, will jump to exit program
+                r3 := jumptable + r1
+                if (r5 != 0) r4 := m[r0][r3] // sets r4 to corresponding label
+                                             // in jumptable if not EOF
+                goto r4
+                
+.section init
+        
+        // Initalize Jump Table
+        // stack pointer in r2
+        // r0 is zero
+        r4 := jumptable
+        goto initialize_jumptable
+        end_initialize:  // place holder to jump too after initialization loop
+
+.section text       
+        initialize_jumptable:
+                m[r0][r4] := input_error
+                r4 := r4 + 1 using r6
+                goto condition_jumptable
+                
+.section text
+        
+        condition_jumptable:
+                r6 := jumptable + 255
+                if (r4 >s r6) goto end_initialize
+                goto initialize_jumptable
+
+.section init
+        
+        // overwrites digit entries of jumptable 
+        m[r0][jumptable + '0'] := digit
+        m[r0][jumptable + '1'] := digit
+        m[r0][jumptable + '2'] := digit
+        m[r0][jumptable + '3'] := digit
+        m[r0][jumptable + '4'] := digit
+        m[r0][jumptable + '5'] := digit       
+        m[r0][jumptable + '6'] := digit
+        m[r0][jumptable + '7'] := digit
+        m[r0][jumptable + '8'] := digit
+        m[r0][jumptable + '9'] := digit
+        
+.section text    
+        // assumes r1 holds the digit to be pushed to the stack
+        digit:
+                r1 := r1 - 48
+                push r1 on stack r2
+                r1 := r1 + 48 // TODO testing
+                output r1
+                //output "\n"
+                goto waiting 
+
+.section init
+        m[r0][jumptable + ' '] := waiting
+        
+.section init        
+        m[r0][jumptable + '+'] := add
+.section text
+        add:
+                if (r2 == endstack) goto stack_underflow_2
+                r5 := endstack - 1
+                if (r2 == r5) goto stack_underflow_2
+                        
+                pop r3 off stack r2 // pop y value from stack
+                pop r4 off stack r2 // pop x value from stack
+                r4 := r4 + r3
+                push r4 on stack r2
+                r4 := r4 + 48
+                output r4 //TODO testing
+                //output "\n"
+                goto waiting
+                
+.section init   
+        m[r0][jumptable + '-'] := sub
+.section text
+        sub:
+                if (r2 == endstack) goto stack_underflow_2
+                r5 := endstack - 1
+                if (r2 == r5) goto stack_underflow_2
+                        
+                pop r3 off stack r2 // pop y value from stack
+                pop r4 off stack r2 // pop x value from stack
+                r4 := r4 - r3
+                push r4 on stack r2
+                r4 := r4 + 48
+                output r4 //TODO testing
+                //output "\n"
+                goto waiting
+
+.section init
+        m[r0][jumptable + '*'] := mul
+.section text
+        mul:
+                if (r2 == endstack) goto stack_underflow_2
+                r5 := endstack - 1
+                if (r2 == r5) goto stack_underflow_2
+                        
+                pop r3 off stack r2 // pop y value from stack
+                pop r4 off stack r2 // pop x value from stack
+                r4 := r4 * r3
+                push r4 on stack r2
+                r4 := r4 + 48
+                output r4 //TODO testing
+                //output "\n"
+                goto waiting
+
+.section init //TODO
+        m[r0][jumptable + '\n'] := digit
+        m[r0][jumptable + '/'] := digit               
+        m[r0][jumptable + '|'] := digit
+        m[r0][jumptable + '&'] := digit
+        m[r0][jumptable + 'c'] := digit
+        m[r0][jumptable + '~'] := digit
+        m[r0][jumptable + 's'] := digit
+        m[r0][jumptable + 'd'] := digit
+        m[r0][jumptable + 'p'] := digit
+        m[r0][jumptable + 'z'] := digit                

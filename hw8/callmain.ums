@@ -1,0 +1,21 @@
+// Comp40 Homework 8
+// By: Josie Barth and Hongyan Wang
+// April 23rd 2016
+
+// Calling Convention
+// r0 is always 0 (points to segment 0, used for goto and for the call stack) 
+// r1 is the return-address register and the result register 
+// r2 is the stack pointer and must have same value after return (nonvolatile) 
+// r3, r4 are nonvolatiles
+// r5 is a volatile register (often used to copy return address) 
+// r6, r7 are volatile and are used as .temps 
+
+############################################################################
+#       start program
+############################################################################
+.section init
+        .temps r6, r7
+        
+.section init
+                goto main linking r1
+                halt

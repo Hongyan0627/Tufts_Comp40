@@ -1,0 +1,357 @@
+                        COMP 40 Lab: hw3 design document
+
+
+Partners:
+
+Partner 1:  Name Peter Vondras      Login peter
+
+Partner 2:  Name Hongyan Wang       Login hwang10
+
+Date: 02-21-16
+
+summary: This document contains the design checklist for Part A and C.
+
+*******************************************************************************
+*                                   PART A                                    *
+*******************************************************************************
+
+1. What is the abstract thing we are trying to represent? 
+        - We are representing a 2D polymorphic array. We will call this an
+          UArray2b_T.
+
+2. What functions will you offer, and what are the contracts those functions
+   must meet?
+        - UArray2b_T UArray2b_new (int width, int height, int size, 
+                                   int blocksize) creates and returns a new
+          UArray2b_T. It is a checked runtime error to provide a width, height,
+          size or blocksize < 1.
+        - UArray2b_T UArray2b_new_64K_block(int width, int height, int size)
+          creates and returns a new array2. It is a checked runtime error
+          to provide a width, height or size < 1. This function will
+          set blocksize to the highest value, such that a block shall fit
+          in a single 64KB cache.
+        - UArray2b_T UArray2b_free (T *array2b) will release all heap allocated
+          memory in array2.
+
+        It is a checked runtime error to pass NULL to the following functions:
+        - int UArray2b_width (T array2b) returns the width of the UArray2b_T.
+        - int UArray2b_height(T array2b) returns the height of the UArray2b_T.
+        - int UArray2b_size (T array2b) returns the size of a single element in
+          the UArray2b_T.
+        - int UArray2b_blocksize(T array2b) returns the side length of the
+          blocks in the UArray2b_T.
+        - void *UArray2b_at(T array2b, int i, int j) returns a pointer to the
+          value at the location (i, j) where i = col and j = row. It is a 
+          checked runtime error for i or j to be out of bounds of the array.
+        - void UArray2b_map(T array2b, void apply(int i, int j, T array2b, 
+                void *elem, void *cl), void *cl) will call the apply function
+          on every cell in the array in some block order.
+
+3. The following is a sequence that one could run using this abstraction:
+
+        UArray2b_T array2b;
+        array2b =  UArray2b_new (2, 3, 1, 2);
+
+        /* setCell below will be applied to all cells in array */
+        UArray2b_map(array2b, setCell, NULL); 
+
+        printf("The array width is %d and height is %d\n",
+                UArray2b_width (array2b), UArray2b_height(array2b));
+        printf("Cell [1, 2] is set to: %d\n", *UArray2b_at(array2b, 1, 2));
+
+        UArray2b_T UArray2b_free (T *array2b);
+
+4. We will use the following representation and invariants:
+
+        Representation:
+        - We will use a UArray2_T which will contain a UArray_T in each cell.
+        - The UArray2_T will be of dimensions
+          (ceil(width/blocksize), ceil(height/blocksize))
+        - Each UArray_T will represent a single block of data.
+
+        Invariants:
+        - sizeof( *UArray2b_at() ) == UArray2b_size()
+        - client data 
+          (width * height) <= (UArray2_height * UArray2_width * Blocksize^2)
+        - When given (row, col) from the world of ideas we would find the UArray
+          held at [col/blocksize, row/blocksize] in the UArray2. Within the
+          UArray, we would return the index at 
+          blocksize * (row % blocksize) + (col % blocksize)
+
+
+5. How does an object in your representation correspond to an object in the
+   world of ideas? That is, what is the inverse mapping from any particular
+   representation to the abstraction that it represents. This question is also
+   especially important to answer precisely.)
+
+        - UArray2b_blocksize(T array2b) returns an integer which represents the
+          square root of the number of values that will be stored together in 
+          memory.
+        - At any given location in our data representation, we can find the row
+          and col of the pixel in the world of ideas using the following:
+
+          Uindex: the index in a UArray that we wish to translate
+          block_row: the row of interest within the UArray2
+          block_col: the col of interest within the UArray2
+
+          row = (block_row * blocksize) + (Uindex / blocksize)
+          col = (block_col * blocksize) + (block_col % blocksize)
+
+
+6. What test cases have you devised?
+
+        We will test:
+        - passing NULL pointers to each of our functions. Our program
+          program should halt with a checked runtime error.
+        - out of bounds requests for array locations which should
+          result in a checked runtime error.
+        - width, height, size and blocksize each of < 1 which should result in
+          a checked runtime error.
+        - sizeof( *UArray2b_at() ) == UArray2b_size()
+        - By creating a UArray2 initialized to all zeros and an identical size
+          UArray2b initialized to all values by expected write order, we can
+          use the UArray2b_map function to copy over the ones from the
+          UArray2b. By having the apply function print out the UArray every
+          (Blocksize * Blocksize) write cycles, we should see individual blocks
+          being written instead of rows or columns. See Figure 1 and two below.
+
+        00 00 00 00        01 02 05 06
+        00 00 00 00        03 04 07 08 
+        00 00 00 00        09 10 14 15
+        00 00 00 00        12 13 16 17
+        UArray2_T      UArray2b_T
+        Figure 1: initial setup
+
+        01 02 00 00        01 02 05 06
+        03 04 00 00        03 04 07 08 
+        00 00 00 00        09 10 14 15
+        00 00 00 00        12 13 16 17
+        UArray2_T          UArray2b_T
+        Figure 2: expected after one block is written to UArray2_T
+
+7. We will require the following programing idioms:
+    - reading files from stdio
+    - getting rid of unused variable warnings
+    - idioms for void **pointers
+    - type abbreviations for structure types
+    - unboxed arrays
+    - allocating memory
+
+*******************************************************************************
+*                                   PART C                                    *
+*******************************************************************************
+
+1. What problem are you trying to solve?
+        - We want to do multiple types of transpose operations on an image 
+          using a black-box 2D Array abstraction without relying on pixel 
+          mapping order that the abstraction uses. 
+
+2. What example inputs will help illuminate the problem?
+        - To test every function, a single image is necessary. The image is a
+           rectangle with 6 equal sized colored boxes. See Figure 3 below for 
+           box orientation. Note that each number (1-6) represents a unique
+           color.
+
+           1 4
+           2 5
+           3 6
+           Figure 3: Rectangle of colored boxes.
+
+3. What example outputs go with those example inputs?
+
+        Note that colors are represented by the same numbers as in question
+        above.
+
+        - rotate 90 cl:
+        3 2 1
+        6 5 4
+
+        - rotate 180 cl:
+        6 3
+        5 2
+        4 1
+
+        - rotate 270 cl:
+        4 5 6
+        1 2 3
+
+        - rotate 0 cl:
+        1 4
+        2 5
+        3 6
+
+        - flip horizontal:
+        4 1
+        5 2
+        6 3
+
+        - flip vertical:
+        3 6
+        2 5
+        1 4
+
+        - transpose: 
+        1 2 3
+        4 5 6
+
+
+4. Into what steps or subproblems can you break down the problem?
+        a. Define a function for each type of transformation 
+           (rotate 90, 180 etc...)
+        b. Read in image from stdin or filename
+        c. Decide which type of image coordinate transformation function to pass
+           an apply function.
+        d. Create new 2D array through A2methods to hold the transformed image.
+        e. Initialize and declare struct to send to apply function. The apply
+           function shall have a pointer to the appropriate coordinate
+           transformation function and to the final A2Methods_UArray2.
+        f. Call appropriate map function through A2methods.
+        g. Apply function will use given transform coordinate functions and call
+           set_pixel function to fill in transformed image array.
+        h. Use pnm functions to send transformed image out on stdout.
+        i. Free original and transformed image as well as the function pointer
+           struct.
+
+5. What data are in each subproblem?
+        a. The data will be the row and column which will be transformed using
+           an equation, unique to each type of transformation.
+        b. We will use pnm's functionality which in turn will use A2methods and
+           return a pointer to the array that was chosen. The array will contain
+           all pixel values.
+        c. Will have the arguments passed and a function pointer.
+        d. Will just have a A2Methods_UArray2.
+        e. Struct will contain two pointer functions, one function for col and
+           one for row transformation and a A2Methods_UArray2 for the
+           transformed image.
+        f. Has pointer to A2Methods_UArray2, struct from (e) and apply function.
+        g. Has pointer to A2Methods_UArray2, struct from (e) and row and col of
+           untransformed image pixel.
+        h. pnm will have access to the A2Methods_UArray2 of the transformed
+           image.
+        i. The original and transformed A2Methods_UArray2s are used in the
+           free operation.
+
+6. What code or algorithms go with that data?
+        a. Given an original image of w * h and a coordinate (col, row):
+                - rotate 90
+                        row_new = col
+                        col_new = h - row - 1
+                - rotate 180
+                        row_new = h - row - 1
+                        col_new = w - col - 1
+                - rotate 270
+                        row_new = w - col - 1
+                        col_new = row
+                - rotate 0 
+                        row_new = row
+                        col_new = col
+                - flip horizontal
+                        row_new = row
+                        col_new = w - col - 1
+                - flip vertical
+                        row_new = h - row - 1
+                        col_new = col
+                - transpose
+                        row_new = col
+                        col_new = row
+        b. Trivial as pnm provides this functionality.
+        c. "if" statements correlated to argument to chose transformation
+           function.
+        d. Trivial as A2methods provides this functionality.
+        e. We will declare struct and set col_trans and row_trans function
+           pointer.
+        f. Trivial as we are only calling a function.
+        g. We will call the two transformation functions in the struct and 
+           then call a set_pixel function which we will send the transformed
+           row and col value to.
+        h. Trivial as pnm provides this functionality for us.
+        i. We will need to call A2free on both A2Methods_UArray2 image pointers
+           and additionally use Hanson's FREE() for the struct holding the
+           function pointers.
+
+7. What abstractions will you use to help solve the problem?
+        - The apply function will not know what type of transformation it is
+          doing to the row and col variable, only that it must transform them.
+          This is a simple abstraction, which allows for increased modularity. 
+
+8. If you have to create new abstractions, what are their design checklists?
+        - We are representing a transformation on a pixel location from an
+          initial to a final location.
+        - We will offer the following functions which require valid row, col 
+          locations:
+                - int transform_row(row)
+                - int transform_col(col)
+        - Representation: We use an initial A2Methods_UArray2 and a final 
+          A2Methods_UArray2 along with a formula which maps the coordinate
+          locations of the first to the last. 
+        - Invariant: See question 9 below.
+
+9. What invariant properties should hold during the solution of the problem?
+        - No two pixels in the original A2Methods_UArray2 map to the
+          same location in the final A2Methods_UArray2.
+        - The transformation process for any pixel does not modify the original
+          image.
+        - The transformation process for any pixel, previous pixel being
+          transformed.
+
+10. What algorithms might help solve the problem? 
+        - The process is trivial as laid out in questions 4-6.
+
+11. What are the major components of your program, and what are their 
+    interfaces? Components include functions as well as abstract data types. An
+    interface includes contracts as well as function prototypes.
+
+        - row-major
+        - col-major
+        - block-major
+        - We have a closure struct (trans_struct) that we will send to the apply
+          function. It will have the appropriate transformation function
+          pointers and a pointer to the final A2Methods_UArray2 image.
+        - apply_to_pixel(int col, int row, A2Methods_UArray2 original,
+                         void *value, void *vcl) acquires transformed
+          coordinates and copies pixel value to new image.
+        - set_trans_struct_p(char *, struct trans_struct *mystct)
+          sets the two transformation function pointers and additionally the
+          new A2Methods_UArray2 pointer in the struct.
+
+        - The following functions will modify the row and col variables
+          appropriately.
+        - void transform_90    (int *col, int *row, int width, int height) 
+        - void transform_180   (int *col, int *row, int width, int height)
+        - void transform_270   (int *col, int *row, int width, int height)
+        - void transform_0     (int *col, int *row, int width, int height)
+        - void transform_vert  (int *col, int *row, int width, int height)
+        - void transform_horiz (int *col, int *row, int width, int height)
+        - void transform_transp(int *col, int *row, int width, int height)
+
+12. How do the components in your program interact?
+    That is, what is the architecture of your program?
+
+    - On a high level, we have a original A2Methods_UArray2 image and an
+      uninitialized final A2Methods_UArray2 image. Based on the users arguments
+      we choose a specific row/col coordinate transformation function. We then
+      map our way to every pixel location in the original image. The apply
+      function is sent the appropriate transformation function that was chosen
+      earlier and uses that to copy the pixel information to the appropriate
+      location in the final image. We then read out the image using pnm.h and 
+      free all allocated memory.
+
+13. What test cases will you use to convince yourself that your program works?
+
+        - The input/output shown in question 2 and 3 above show a single image
+          that we can use to test the validity of each type of transformation.
+        - We can transform an image several times using different combinations
+          of transformations that should result in a same final image that we
+          started with. We could then test that the diff command returns no 
+          change in the original and final product.
+        - Test fail to open file by giving an invalid file name. This results
+          in an output message to STDERR and EXIT_FAILURE.
+        - We will test rectangular images to make sure that they resize
+          correctly.
+
+14. What arguments will you use to convince a skeptical audience that your
+    program works?  
+
+        - Once functioning, we can prove that our program works correctly by 
+          manually creating the correct output for each translation type and
+          running a diff on the result vs the correct answer.

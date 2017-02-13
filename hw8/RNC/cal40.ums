@@ -1,0 +1,467 @@
+
+#########################################################
+#       set zero register and temporary registers
+#########################################################
+.zero r0
+.temps r6,r7
+.section init
+	r0 := 0
+
+
+#########################################################
+#	call stack and value stack
+#########################################################
+.section stk
+	.space 10000
+	endstack:
+
+.section stk
+	.space 10000
+	end_valuestack:
+
+########################################################
+#reserve r2 for call stack, reserve r4 for value stack
+########################################################
+.section init 
+	r2 := endstack
+	r4 := end_valuestack
+
+########################################################
+#	initialize jumptable
+########################################################
+.section data
+    	jumptable:
+    		.space 256
+
+.section init
+	initialize_jumptable:
+                push r1 on stack r2 //save the return address
+                push r3 on stack r2 
+                push r4 on stack r2
+                r4 := jumptable // start of the jumptable
+                r3 := jumptable + 255 // the end of the jumptable
+                goto jumptable_loop
+
+        jumptable_loop:
+                m[r0][r4] := input_error
+                r4 := r4 + 1 using r5
+                #output r4
+                if (r4 <=s r3) goto jumptable_loop using r5
+                
+                pop r4 off stack r2
+                pop r3 off stack r2
+                pop r5 off stack r2
+.section text
+	input_error:
+		output "unknown character \'"
+        	output r1
+        	output "\'\n"
+        	goto waiting
+
+#######################################################################
+#	set digit in jumptable
+#######################################################################
+
+.section init
+        m[r0][jumptable + '0'] := digit
+        m[r0][jumptable + '1'] := digit
+        m[r0][jumptable + '2'] := digit
+        m[r0][jumptable + '3'] := digit
+        m[r0][jumptable + '4'] := digit
+        m[r0][jumptable + '5'] := digit
+        m[r0][jumptable + '6'] := digit
+        m[r0][jumptable + '7'] := digit
+        m[r0][jumptable + '8'] := digit
+        m[r0][jumptable + '9'] := digit
+.section text
+	digit:
+		r5 := r1 - 48
+		push r5 on stack r4
+
+		if (r3 == 0) goto entering
+
+		pop r1 off stack r4
+		pop r5 off stack r4
+
+		r5 := r5 * 10
+		r5 := r5 + r1
+
+		push r5 on stack r4
+		goto entering
+
+########################################################################
+#	set space
+########################################################################
+.section init
+       m[r0][jumptable + ' '] := waiting
+
+
+########################################################################
+#	set newline
+########################################################################
+.section init
+       m[r0][jumptable + '\n'] := print_start
+
+.section text
+	print_start:
+		push r1 on stack r2
+		push r3 on stack r2
+		push r4 on stack r2
+
+		r3 := r4
+		goto print_loop
+
+	print_loop:
+		if (r3 == end_valuestack) goto print_end using r5
+		r4 := m[r0][r3]
+
+		push r4 on stack r2
+		goto print_value_start linking r1
+
+		r3 := r3 + 1
+		goto print_loop
+
+	print_end:
+		pop r4 off stack r2
+		pop r3 off stack r2
+		pop r1 off stack r2
+		goto waiting
+
+#######################################################################
+#	print module
+#######################################################################
+.section text
+
+	print_value_start:
+
+		output ">>> "
+
+		pop r4 off stack r2
+		push r1 on stack r2
+		push r3 on stack r2
+
+		r3 := 0
+		
+		if (r4 == 0) goto print_zero
+		if (r4 <s 0) goto print_negative using r5 
+		goto print_positive_value
+
+	print_zero:
+		output '0'
+		goto print_value_exit
+
+	print_negative:
+		output '-'
+		r4 := -r4
+		goto print_positive_value
+
+	print_positive_value:
+		r3 := r3 + 1
+		r5 := r4
+
+		r4 := r4 / 10
+		if (r4 == 0) goto print_digit_start
+
+		r5 := r5 mod 10
+
+		push r5 on stack r2
+		goto print_positive_value
+
+	print_digit_start:
+		output r5 + 48
+		r3 := r3 - 1
+		goto print_digit_loop
+
+	print_digit_loop:
+		if (r3 == 0) goto print_value_exit
+		pop r4 off stack r2
+		output r4 + 48
+		r3 := r3 - 1
+		goto print_digit_loop
+
+	print_value_exit:
+		output '\n'
+		pop r3 off stack r2
+		pop r1 off stack r2
+		goto r1
+
+############################################################################
+#	set '+'
+############################################################################
+.section init
+       m[r0][jumptable + '+'] := add
+.section text
+	add:
+		goto check2 linking r1
+		pop r1 off stack r4
+		pop r3 off stack r4
+
+		r1 := r3 + r1
+
+		push r1 on stack r4
+		goto waiting
+
+############################################################################
+#	set '-'
+############################################################################
+.section init
+       m[r0][jumptable + '-'] := sub
+.section text
+	sub:
+		goto check2 linking r1
+		pop r1 off stack r4
+		pop r3 off stack r4
+
+		r1 := r3 - r1
+		
+		push r1 on stack r4
+		goto waiting
+
+############################################################################
+#	set '*'
+############################################################################
+.section init
+       m[r0][jumptable + '*'] := mul
+.section text
+	mul:
+		goto check2 linking r1
+		pop r1 off stack r4
+		pop r3 off stack r4
+
+		r1 := r3 * r1
+		
+		push r1 on stack r4
+		goto waiting
+############################################################################
+#	set '/'
+############################################################################
+.section init
+       m[r0][jumptable + '/'] := div
+.section text
+	div:
+		goto check2 linking r1
+		pop r1 off stack r4
+		pop r3 off stack r4
+
+		if (r1 == 0) goto divide_zero_error
+
+		if (r3 <s 0) goto negative_x using r5
+
+		if (r1 <s 0) goto positive_x_negative_y using r5
+
+		r1 := r3 / r1
+		push r1 on stack r4
+		goto waiting
+
+.section text
+	divide_zero_error:
+		output "Division by zero\n"
+		push r3 on stack r4
+		push r1 on stack r4
+		goto waiting
+	negative_x:
+		if (r1 >s 0) goto negative_x_positive_y using r5
+		r3 := -r3
+		r1 := -r1
+		r1 := r3 / r1
+		push r1 on stack r4
+		goto waiting
+	negative_x_positive_y:
+		r3 := -r3
+		r1 := r3 / r1
+		r1 := -r1
+		push r1 on stack r4
+		goto waiting
+	positive_x_negative_y:
+		r1 := -r1
+		r1 := r3 / r1
+		r1 := -r1
+		push r1 on stack r4
+		goto waiting
+
+############################################################################
+#	set '|'
+############################################################################
+.section init
+       m[r0][jumptable + '|'] := bit_or
+.section text
+	bit_or:
+		goto check2 linking r1
+		pop r1 off stack r4
+		pop r3 off stack r4
+
+		r1 := r3 | r1
+		
+		push r1 on stack r4
+		goto waiting
+
+############################################################################
+#	set '&'
+############################################################################
+
+.section init
+       m[r0][jumptable + '&'] := bit_and
+.section text
+	bit_and:
+		goto check2 linking r1
+		pop r1 off stack r4
+		pop r3 off stack r4
+
+		r1 := r3 & r1
+		
+		push r1 on stack r4
+		goto waiting
+
+
+############################################################################
+#	set 's': swap two values
+############################################################################
+.section init
+       m[r0][jumptable + 's'] := swap_value
+.section text
+	swap_value:
+		goto check2 linking r1
+		pop r1 off stack r4
+		pop r3 off stack r4
+		
+		push r1 on stack r4
+		push r3 on stack r4
+		goto waiting
+
+
+############################################################################
+#	set 'c': change sign
+############################################################################
+
+.section init
+       m[r0][jumptable + 'c'] := change_sign
+.section text
+	change_sign:
+		goto check1 linking r1
+		pop r1 off stack r4
+
+		r1 := -r1
+		
+		push r1 on stack r4
+		goto waiting
+
+############################################################################
+#	set '~':bit complement
+############################################################################
+.section init
+       m[r0][jumptable + '~'] := bit_complement
+.section text
+	bit_complement:
+		goto check1 linking r1
+		pop r1 off stack r4
+
+		r1 := ~r1
+		
+		push r1 on stack r4
+		goto waiting
+
+############################################################################
+#	set 'd': duplicate value
+############################################################################
+.section init
+        m[r0][jumptable + 'd'] := duplicate_value
+.section text
+	duplicate_value:
+		goto check1 linking r1
+		pop r1 off stack r4
+		
+		push r1 on stack r4
+		push r1 on stack r4
+
+		goto waiting
+
+############################################################################
+#	set 'p':pop value from stack, then discard the value
+############################################################################
+.section init
+        m[r0][jumptable + 'p'] := pop_value
+.section text
+	pop_value:
+		goto check1 linking r1
+		pop r1 off stack r4
+
+		goto waiting
+
+############################################################################
+#	set 'z': zero stack
+############################################################################
+
+.section init
+        m[r0][jumptable + 'z'] := zero_stack
+.section text
+	zero_stack:
+		r5 := end_valuestack - r4
+		if (r5 == 0) goto waiting
+		pop r1 off stack r4
+		goto zero_stack
+
+
+############################################################################
+#	helper functions to check stack underflow
+############################################################################
+.section text
+	check1:
+		r5 := end_valuestack - r4
+		if (r5 != 0) goto r1
+		goto error1
+	check2: 
+		r5 := end_valuestack - r4
+		r5 := r5 / 2
+		if (r5 != 0) goto r1
+		goto error2
+	error1:
+		output "Stack underflow---expected at least 1 element\n"
+		goto waiting
+	error2:
+		output "Stack underflow---expected at least 2 element\n"
+		goto waiting
+
+############################################################################
+#	waiting and entering states
+############################################################################	
+.section text
+	waiting:
+		r3 := 0
+		r1 := input()
+		goto waiting_with_character
+	entering: 
+		r3 := 1
+		r1 := input()
+		goto waiting_with_character
+
+	waiting_with_character:
+
+		r5 := ~r1 // tests for EOF
+		if (r5 == 0) goto exit_program
+
+                r5 := jumptable + r1 // branch indirect through jumptable
+	       	r5 := m[r0][r5]
+                goto r5
+             
+############################################################################
+#	exit program
+############################################################################   
+.section text
+	exit_program:
+                halt
+
+############################################################################
+#	main program
+############################################################################
+.section text
+       	main: 
+       		goto waiting
+
+
+############################################################################
+#	start program
+############################################################################
+.section init
+	goto main
+
+

@@ -1,0 +1,147 @@
+// Comp40 Homework 8
+// By: Josie Barth and Hongyan Wang
+// April 23rd 2016
+
+
+.section text
+        .temps r6, r7
+        main:
+                goto initialize_jumptable linking r1 
+                goto write_digits linking r1
+                goto write_commands linking r1
+                
+                push r1 on stack r2
+                push r4 on stack r2
+                
+                r4 := value_stack
+                push r4 on stack r2
+                goto waiting linking r1
+             
+                pop r4 off stack r2
+                pop r5 off stack r2
+                goto r5
+         
+        exit_program:
+                halt
+        
+.section init
+        
+        jumptable: // jump table "points" to the begining of the jumptable
+                .space 256 //creates space for 256 ASCII chars
+        
+                
+.section text  
+
+        // Initalize Jump Table
+        // stack pointer in r2
+        // registers r3, r4 are nonvolitile
+        // r0 is zero
+        initialize_jumptable:
+                
+                push r1 on stack r2 //save the return address
+                push r3 on stack r2 
+                push r4 on stack r2
+                r4 := jumptable // start of the jumptable
+                r3 := jumptable + 255 // the end of the jumptable
+                goto jumptable_loop
+        
+        // loop to initialize all inputs of jumptable to "unknown character"
+        // using r4 as i
+        jumptable_loop:
+                m[r0][r4] := input_error
+                r4 := r4 + 1 using r6
+                if (r4 <=s r3) goto jumptable_loop using r5
+                
+                pop r4 off stack r2
+                pop r3 off stack r2
+                pop r5 off stack r2
+                goto r5
+                
+.section text
+        // assumes r1 holds the users input character
+        input_error:
+                output "Unknown character "
+                //output r1
+               // output " \n"
+                goto exit_program
+                
+.section text
+        
+        write_digits:
+                push r1 on stack r2
+        
+                // overwrites digit entries of jumptable 
+                m[r0][jumptable + '0'] := digit
+                m[r0][jumptable + '1'] := digit
+                m[r0][jumptable + '2'] := digit
+                m[r0][jumptable + '3'] := digit
+                m[r0][jumptable + '4'] := digit
+                m[r0][jumptable + '5'] := digit       
+                m[r0][jumptable + '6'] := digit
+                m[r0][jumptable + '7'] := digit
+                m[r0][jumptable + '8'] := digit
+                m[r0][jumptable + '9'] := digit
+        
+                pop r5 off stack r2
+                goto r5
+                 
+
+        // assumes parameters are the value_stack and the value itself
+        digit:
+                push r1 on stack r2 // save the return address
+                push r3 on stack r2 // save nonvolatile register
+                
+                r1 := m[r0][r2 + 2] // now r1 holds value_stack
+                r3 := m[r0][r2 + 3] // now r3 holds the value we want to store
+               
+                r3 := r3 - '0'      // save value of digit not decimal
+                push r3 on stack r1 // push digit onto value_stack
+                
+                pop r3 off stack r2 // restore nonvolatile regist
+                pop r5 off stack r2 
+                goto r5 // return
+
+        m[r0][jumptable + ' '] := waiting
+        
+.section text
+
+        // invariant: assumes r4 contains the value stack
+        waiting:
+                push r1 on stack r2 // save return address
+                push r3 on stack r2 // save nonvolatile register
+                push r4 on stack r2 // save non volatile register
+                
+                r4 := m[r0][r2 + 3] //contains value stack
+                r1 := input()
+                goto waiting_with_character
+                
+        // invariant: expects parameter is in r1
+        waiting_with_character:
+                
+                push r4 on stack r2 // use temporarily to check for EOF
+                
+                r5 := ~r1 // tests for EOF
+                r3 := exit_program // if EOF, will jump to exit program
+                
+                r4 := jumptable + r1 // branch indirect through jumptable
+                
+                if (r5 != 0) r3 := m[r0][r4] // sets r3 to corresponding label
+                                             // in jumptable if not EOF         
+                  
+                pop r4 off stack r2 //pop off temporary variable
+                                             
+                push r1 on stack r2 // push user's input value
+                push r4 on stack r2 // push the value stack
+                goto r3 linking r1
+                
+                pop stack r2 // pop user's input off stack
+                pop stack r2 // pop old value stack off callstack
+                
+                pop r4 off stack r2 // restore nonvolatile register
+                pop r3 off stack r2 // restore nonvolatile register
+                pop r5 off stack r2 
+                
+                r4 := r1 // save new value stack in r4
+                push r4 on stack r2 // push new value on stack in r4
+                
+                goto waiting 

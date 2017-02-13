@@ -1,0 +1,63 @@
+.section text
+        .temps r6, r7, r5
+        main:
+                output "hi\n"
+                goto initialize_jumptable linking r1
+                push r1 on stack r2
+                push r4 on stack r2
+                output "in main\n"
+                r4 := m[r0][jumptable + '0']
+                goto r4
+                
+                pop r4 off stack r2
+                pop r1 off stack r2
+                goto r1
+        
+.section init
+        
+        //output "in jumptable\n"
+        //push r1 on stack r2
+        
+        jumptable: // jump table "points" to the begining of the jumptable
+                .space 256 //creates space for 256 ASCII chars
+        //goto initialize_jumptable linking r1
+        
+        //pop r1 off stack r2
+       // goto r1
+                
+.section text
+        // assumes r1 holds the users input character
+        input_error:
+                output "Unknown character "
+                halt
+                //output r1
+                //output " \n"
+               // goto exit_program
+
+      
+.section text 
+
+        // Initalize Jump Table
+        // stack pointer in r2
+        // registers r3, r4 are nonvolitile
+        // r0 is zero
+        initialize_jumptable:
+                
+                push r1 on stack r2 //save the return address
+                push r3 on stack r2 
+                push r4 on stack r2
+                r4 := jumptable // start of the jumptable
+                r3 := jumptable + 255 // the end of the jumptable
+                goto jumptable_loop
+        
+         // loop to initialize all inputs of jumptable to "unknown character"
+         // using r4 as i
+        jumptable_loop:
+                m[r0][r4] := input_error
+                r4 := r4 + 1 using r6
+                if (r4 <=s r3) goto jumptable_loop
+                
+                pop r4 off stack r2
+                pop r3 off stack r2
+                pop r1 off stack r2
+                goto r1

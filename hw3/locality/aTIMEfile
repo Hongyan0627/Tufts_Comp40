@@ -1,0 +1,185 @@
+**********************************
+
+All work done on "homework server"
+Rotation:                       90
+Map category:            row-major
+Number of pixels:         37372800
+Total Time:           6770675514.0
+Time Per Pixel:              181.2
+
+**********************************
+
+All work done on "homework server"
+Rotation:                      180
+Map category:            row-major
+Number of pixels:         37372800
+Total Time:           3701927025.0
+Time Per Pixel:               99.1
+**********************************
+
+All work done on "homework server"
+Rotation:                      270
+Map category:            row-major
+Number of pixels:         37372800
+Total Time:           6666441843.0
+Time Per Pixel:              178.4
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Map category:            row-major
+Number of pixels:         37372800
+Total Time:           3534886742.0
+Time Per Pixel:               94.6
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Transformation:       HORIZONTAL
+Map category:            row-major
+Number of pixels:         37372800
+Total Time:           3450904527.0
+Time Per Pixel:               92.3
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Transformation:       VERTICAL
+Map category:            row-major
+Number of pixels:         37372800
+Total Time:           3707207637.0
+Time Per Pixel:               99.2
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Transformation:       TRANSPOSE
+Map category:            row-major
+Number of pixels:         37372800
+Total Time:           6430688541.0
+Time Per Pixel:              172.1
+**********************************
+
+All work done on "homework server"
+Rotation:                       90
+Map category:            col-major
+Number of pixels:         37372800
+Total Time:           6272511008.0
+Time Per Pixel:              167.8
+**********************************
+
+All work done on "homework server"
+Rotation:                      180
+Map category:            col-major
+Number of pixels:         37372800
+Total Time:           9692278364.0
+Time Per Pixel:              259.3
+**********************************
+
+All work done on "homework server"
+Rotation:                      270
+Map category:            col-major
+Number of pixels:         37372800
+Total Time:           6049139203.0
+Time Per Pixel:              161.9
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Map category:            col-major
+Number of pixels:         37372800
+Total Time:           9996346440.0
+Time Per Pixel:              267.5
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Transformation:       HORIZONTAL
+Map category:            col-major
+Number of pixels:         37372800
+Total Time:           9201342732.0
+Time Per Pixel:              246.2
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Transformation:       VERTICAL
+Map category:            col-major
+Number of pixels:         37372800
+Total Time:           9968710549.0
+Time Per Pixel:              266.7
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Transformation:       TRANSPOSE
+Map category:            col-major
+Number of pixels:         37372800
+Total Time:           6484648425.0
+Time Per Pixel:              173.5
+**********************************
+
+All work done on "homework server"
+Rotation:                       90
+Map category:            block-major
+Number of pixels:         37372800
+Total Time:           7586591168.0
+Time Per Pixel:              203.0
+
+**********************************
+
+All work done on "homework server"
+Rotation:                      180
+Map category:            block-major
+Number of pixels:         37372800
+Total Time:           8452867958.0
+Time Per Pixel:              226.2
+
+**********************************
+
+All work done on "homework server"
+Rotation:                      270
+Map category:            block-major
+Number of pixels:         37372800
+Total Time:           8952398211.0
+Time Per Pixel:              239.5
+
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Map category:            block-major
+Number of pixels:         37372800
+Total Time:           7372386080.0
+Time Per Pixel:              197.3
+
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Transformation:          HORIZONTAL
+Map category:            block-major
+Number of pixels:         37372800
+Total Time:           8157002976.0
+Time Per Pixel:              218.3
+
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Transformation:          VERTICAL
+Map category:            block-major
+Number of pixels:         37372800
+Total Time:           7453111427.0
+Time Per Pixel:              199.4
+
+**********************************
+
+All work done on "homework server"
+Rotation:                        0
+Transformation:          TRANSPOSE
+Map category:            block-major
+Number of pixels:         37372800
+Total Time:           6909281109.0
+Time Per Pixel:              184.9
+

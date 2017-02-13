@@ -1,0 +1,132 @@
+                        COMP 40 HW 6: README
+
+
+Partners:
+
+Partner 1:  Peter Vondras      Login peter
+
+Partner 2:  Hongyan Wang       Login hwang10
+
+********************************************************************************
+
+Acknowledgments:
+        - We were helped by several of the course staff including but not
+          limited to Carter Casey, Tom Hebb and James Mernin.
+        - We received feedback from the course staff about our design plan for
+          our segmenter and UM.
+        - We used the course website for guidelines and guidance.
+        - We utilized the test programs midmark.um and sandmark.umz
+        - We also referenced numerous Piazza posts for common problems to avoid.
+
+Implementation: To our knowledge, we have completed everything to the 
+                specification laid out in the assignment.
+
+Departures from Design:
+        - We needed to add the functions Seg_map_zero() and Seg_unmap_zero() to
+          our segmenter module seg.h. This was because of the special behavior
+          required for the program. For example, when mapping zero, we are
+          demanding a specific segment ID.
+        - The code_extractor modules functions morphed into get_opcode(), 
+          set_ra_rb_rc() and set_ra_val(). The last two functions take
+          references to variables which they modify. The reason for this was to
+          more adequately create an abstraction barrier along with simplifying
+          the code.
+
+Architecture:
+        - The main program calls the UM_Loader. The loader will use UM and 
+          segmenter functions to load program into segment 0. Main then calls 
+          the UM to run.
+        - The program_loader handles the creation of an initial segment and 
+          loading the original program's instructions into segment 0. It does
+          not understand how to execute or interpret instructions.
+        - The UM, reads instructions with the help of the code_extractor. It 
+          performs all math, copying, logic and actual execution but relies on
+          the segmenter module to assign and interpret segment ID's. It also
+          uses the segmenter to retrieve memory addresses, query sizes and free
+          memory. The UM does not store anything on the heap itself. The UM
+          keeps all of the information regarding the status of the program in a
+          runtime_info struct including the program_counter, program length,
+          pointer to the program, registers etc...
+        - The code_extractor is responsible for pulling register numbers and 
+          opcodes out of instructions. It has no understanding of what are in
+          registers or what actions are done for different opcodes.
+        - The segmenter module handles all heap allocated memory storage. It 
+          effectively acts as calloc functioning with 4 byte pointers. It does 
+          not know anything about what is being done with the memory that it
+          allocates, but ensures that memory is freed efficiently and segment
+          ID's are recycled when possible.
+
+50 Million Instructions: 
+        - The program sandmark.umz has 11421 instructions in the initial 
+          program. This number was calculated using its size, knowing that each
+          instruction was made of 4 bytes. The copying of this file is
+          insignificant as compared the the number of instructions completed by
+          the UM (2,113,497,560). 
+        - The number of instructions executed was counted by coding in a 
+          variable which increments every time an instruction is executed. The
+          amount of time that this additional incrementation added was hidden in
+          the noise of the experiment.
+        - The UM ran sandmark.umz with the time command and found that the
+          program took 75.875 seconds of cpu time and .02 seconds of system time
+          for a total of 75.895 seconds.
+        - Using the ratio of time/instruction calculated from the above we get
+          75.895(seconds) / 2,113,497,560(instructions) = 0.000000036(sec/instr)
+          which we can multiply by 50 Million to get 1.795(sec/50M_instr).
+
+UM Unit Tests:
+        - 1_halt.um
+                - 1_halt.um tests Halt. 
+                  This test only contains one halt() function, and it should 
+                  EXIT_SUCCESS if halt() works.
+        - 2_load_out_halt.um
+                - 2_load_out_halt.um tests Load Value, Output, and Halt. 
+                  We load values to 8 registers, then output the value in each 
+                  register. If loadval and output work, we should see 
+                  the expected values from output.
+        - 3_in_out_halt.um
+                - 3_in_out_halt.um tests Input, Output, Halt. 
+                  We input a value to a register, then we output the value at 
+                  that register. We repeat this on different registers. If input
+                  and output work well, we should see the expected values from 
+                  output. 
+        - 4_math.um
+                - 4_math.um tests Addition, Multiplication and Division. 
+                  We load several values into different registers, then we do 
+                  math by calling add(), multiply() and divide(). Then we 
+                  output the result. If add, multiply and divide functions work
+                  well, we should see expected result from the output.  
+        - 5_map_unmap.um
+                - 5_map_unmap.um tests Map Segment and Unmap Segment. A segment
+                  is mapped and its ID is stored. It is then unmapped. finally
+                  it is remapped as a different size. If the ID given the second
+                  time matches the first time then it is being properly recycled
+                  and the test will output a 'P', otherwise it will output an 
+                  'F' for failure.
+        - 6_store_load.um
+                - 6_store_load.um tests Segmented Load, Segmented Store and Load
+                  Program. 
+                  We load values to registers and then output values in those 
+                  registers. Then we load these instructions from Segment 0 to 
+                  registers, and store these instructions from registers to a 
+                  new segment. Finally we load that segment. If segmented load 
+                  and segmented store work well, we should see the same output
+                  twice. 
+        - 7_cond.um
+                - 7_cond.um tests Conditional Move. 
+                  We load three values two register ra, rb and rc. Values in ra
+                  and rb are different. Value in rc is 0. When we call cond_move
+                  on ra, rb and rc, then output the value in ra. We should see
+                  the value is unchange. Then we load a nonzero number to rc, 
+                  call cond_move on ra, rb and rc again, output the value in ra.
+                  We should see that the new value is the same as the value in 
+                  rb.
+        - 8_nand.um
+                - 8_nand.um tests NAND. 
+                  We load two values into two registers, then we call nand() on
+                  those two registers. Then we output the result. If nand() 
+                  works well, we should see the expected value from output. 
+
+Time Spent:
+        - Analyzing                             4  hours
+        - Preparing Design                      8  hours
+        - Solving Problems after Analysis       20 hours

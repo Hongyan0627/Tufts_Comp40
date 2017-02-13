@@ -1,0 +1,17 @@
+(require 'cc-mode) ; automatic mode for C code
+(setq c-default-style
+      '((java-mode . "java")
+ 	    (c-mode    . "linux")
+	    ;(c++-mode  . "k&r")
+ 	    (other     . "gnu")))
+
+(setq-default indent-tabs-mode nil)
+(require 'compile) ; support for compile command
+(setq compile-command "sh compile")
+
+(global-set-key "\C-c\C-c" 'compile) ; make C-c C-c do compile when
+                                       ; not otherwise specified
+(defun bind-compile-key ()
+  (local-set-key "\C-c\C-c" 'compile))
+(add-hook 'c-mode-hook 'bind-compile-key) ; make C-c C-c do compile
+                                            ; in C mode

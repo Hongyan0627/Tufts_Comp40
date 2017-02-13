@@ -1,0 +1,194 @@
+######################################################################
+Interfaces, Implementations, and Images
+Design Document
+Purpose: provide a thorough description of our plan to build an 
+interface for a two dimensional array.
+By: Derick Yang and Hongyan Wang
+Date: February 8, 2016
+######################################################################
+
+######################################################################
+
+                        PART 1: UArray2 Design
+
+######################################################################
+1. The Problem:
+To represent an unboxed two dimensional array of polymorphic objects
+----------------------------------------------------------------------
+2. Functions we will offer:
+* T UArray2_new(int width, int height, int size) returns a new
+    UArray2, allocated on the heap, initialized with the given width,
+    height, and size of each element. Note that the UArray2 is unboxed, 
+    and is initialized to contain zeros in all allocated bits.
+
+* void UArray2_map_col_major(T the_array, 
+    void apply(int col, int row, T a, void *curr_val, void *ok), 
+    bool *ok)
+    This function maps apply() to all elements in the array,
+    using the col major order
+
+* void UArray2_map_row_major(T the_array, 
+    void apply(int col, int row, T a, void *curr_val, void *ok), 
+    bool *ok);
+    This function maps apply() to all elements in the array,
+    using the row major order
+
+* void *UArray2_at(T the_array, int col, int row)
+    This function returns a pointer to the value at the given indices
+
+* int UArray2_width(T the_array)
+    This function returns the width of the array
+
+* int UArray2_height(T the_array)
+    This function returns the height of the array
+
+* int UArray2_size(T the_array)
+    This function returns the size of each element in the array
+
+* void UArray2_free(T *the_array)
+    This function frees allocated space in the array
+----------------------------------------------------------------------
+3. Examples of what functions should do:
+* UArray2_T test_array = UArray2_new(5, 6, sizeof(int));
+    test_array should be a pointer to the struct UArray2, non-null, 
+    and should point to enough space for 5 * 6 * sizeof(int) bytes.
+* int *test_val = UArray2_at(test_array, 3, 2);
+    test_val should be a pointer to the integer at column 3, row 2 in
+    the test_array. In this case, should be null
+* int test_width = UArray2_width(test_array);
+    test_width should be 5.
+* int test_size = UArray2_size(test_array);
+    test_size should return the number of bytes required for int 
+    (sizeof(int))
+----------------------------------------------------------------------
+4. Representations and Invariants:
+* We will use the one dimensional array interface that Hanson and 
+    Ramsey provides us. Though the array we implement will be one
+    dimensional, we will utilize the formula (given a row and col): 
+    index = col + row * width
+    in order to access the correct elements in the array.
+* Invariants:
+    * The length of our 1-dimensional array should never exceed 
+    width * height. Furthermore, the size of our array should not 
+    change.
+    * The size of the return value of UArray_at() (which is an element
+    in the array) should be equal to the return value of 
+    UArray2_size() (which returns the size of one element in the 
+    array)
+    * The elements in our array should be homogeneous.
+----------------------------------------------------------------------
+5. How does the representation represent a real object?
+    Our interface represents a two-dimensional array, with the width
+    corresponding to the width of the array, and the height 
+    corresponding to the height of the array. We do not implement the
+    structure as such, but to the client, the array is seen as two
+    dimensional
+----------------------------------------------------------------------
+6. Test cases:
+We want to test our 2D array implementation with the following cases:
+* initialize an array with invalid dimensions (ie width and/or 
+height == 0). Should result in a checked runtime error.
+* attempt using the UArray2_at() function to access an element with 
+a column out of bounds (checked runtime error)
+* attempt using the UArray2_at() function to access an element with
+a row out of bounds(checked runtime error)
+* use UArray2_at() to get the value of an uninitialized cell in the 
+array (the returned pointer should point to some zero value).
+----------------------------------------------------------------------
+7. Idioms:
+We will use Hanson-style structure (ie a pointer) to represent our 
+UArray2 type.
+We will also used unboxed arrays, which means that the values in the
+array will be the actual data, rather than a pointer to the data.
+######################################################################
+
+######################################################################
+
+                        PART 2: Bit2 Design
+
+######################################################################
+1. The Problem:
+To represent a 2 dimensional array of bits
+----------------------------------------------------------------------
+2. Functions we will offer:
+* T Bit2_new(int width, int height);
+    Bit2_new returns a new Bit2 array
+
+* void Bit2_map_col_major(T the_array, 
+    void apply(int col, int row, T a, int curr_val, void *ok), 
+    bool *ok);
+    This function maps apply() to all elements in the array,
+    using the col major order
+
+* void Bit2_map_row_major(T the_array, 
+    void apply(int col, int row, T a, int curr_val, void *ok), 
+    bool *ok);
+    This function maps apply() to all elements in the array,
+    using the row major order
+
+* int Bit2_put(T the_array, int col, int row, int marker);
+    This function replaces the marker at the given pair of indicesto
+    the marker. Returns the previous value at that index
+
+* int Bit2_get(T the_array, int col, int row);
+    This function returns the value of the map at the 
+    given pair of indices
+
+* int Bit2_width(T the_array);
+This function returns the width of the array
+
+* int Bit2_height(T the_array);
+This function returns the height of the array
+
+* void Bit2_free(T *the_array);
+This function frees allocated space in the array
+----------------------------------------------------------------------
+3. Examples of what functions should do:
+* Bit2_T new_array = Bit2_new(5, 6)
+    new_array should be a pointer to a Bit2 struct, with enough space
+    initialized in it for width * height bits.
+* int test_val = Bit2_get(new_array, 3, 2);
+    test_val should be the value at column 3, row 2 in
+    the new_array. In this case, should be 0.
+* int test_width = UArray2_width(new_array);
+    test_width should be 5.
+----------------------------------------------------------------------
+4. Representations and Invariants:
+* We will use the one dimensional array interface that Hanson and 
+    Ramsey provides us. Though the array we implement will be one
+    dimensional, we will utilize the formula (given a row and col): 
+    index = col + row * width
+    in order to access the correct elements in the array.
+* Invariants:
+    * The length of our 1-dimensional array should never exceed 
+    width * height. Also, the size of our array should not change.
+    * Bit2_put(the_array, col, row, a) 
+      Bit2_get(the_array, col, row) == a.
+    * The value at any index in our 2D array should only ever be 0 or
+    1
+----------------------------------------------------------------------
+5. How does the representation represent a real object?
+    We represent a 2 dimensional bitmap using a 1 dimensional array
+    and the formula index = col + row * width. To the client, the
+    array looks like a two dimensional array with width and heigh
+    properties.
+----------------------------------------------------------------------
+6. Test cases:
+We want to test our 2D bit array implementation with the following 
+cases:
+* initialize an array with invalid dimensions (ie width and/or 
+height == 0). Should result in a checked runtime error.
+* attempt using the Bit2_get() function to access an element with 
+a column out of bounds (checked runtime error)
+* attempt using the Bit2_get() function to access an element with
+a row out of bounds(checked runtime error)
+* use Bit2_get() to get the value of an uninitialized cell in the 
+array (the returned pointer should point to some zero value).
+* test with valid indices, (ie row, col positive and less than height
+and width respectively) 
+----------------------------------------------------------------------
+7. Idioms:
+    We will use a Hanson structure to represent out bitmap (namely, we
+    use a pointer to a structure)
+    We use an unboxed structure to store the values.
+######################################################################

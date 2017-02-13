@@ -1,0 +1,159 @@
+                        COMP 40 HW 2: README
+
+
+Partners:
+
+Partner 1:  Peter Vondras      Login peter
+
+Partner 2:  Hongyan Wang       Login hwang10
+
+*****************************************************************************
+
+Acknowledgments:
+        - We were helped by several of the course staff including but not
+          limited to Rachael Robinson, Charlie and Charles.
+        - We received feedback from the course staff about our design plan for
+          UArray2b and ppmtrans.
+        - We referenced "Computer Systems A Programmer's Perspective" by Bryant
+          and O'Hallaron extensively, especially chapter 6.
+        - We used the course website for guidelines and guidance.
+        - We also referenced numerous Piaza posts for common problems to avoid.
+
+Implementation: To our knowledge, we have completed everything to the 
+                specification laid out in the assignment. In addition to the
+                required transformations, have implemented all of the extra
+                credit options.
+
+Architecture:
+        - ppmtrans uses the functions in A2methods to perform different image
+          transformations. If it is not given arguments requesting the memory
+          representation of the image, it will choose to store it in row-major
+          order. If it is given an argument requesting a specific memory 
+          representation, it will inform A2Methods which will work with the 
+          appropriate data structures using the same function pointers.
+        - ppmtrans sends a struct to the transformation apply function which 
+          contains a pointer to the correct type of transformation being done.
+          We chose to do this to reduce the amount of operations per pixel and
+          increase modularity.
+        - A2Methods uses the requested data structures requested by ppmtrans. It
+          contains two structs of function pointers, one for a UArray2B 
+          implementation and one for a UArray implementation.
+        - UArray2B stores blocks of memory in cubes using a UArray2. Within each
+          cube is a UArray stored in row major order.
+        - ppmtrans will save a log file. We have submitted our logs as in the
+          file: aTIMEfile 
+
+PART E: Measured vs Estimated time
+
+         row-maj access    col-maj access    block-maj access
+        *******************************************************
+ 90-deg *       3        |         2       |         1        *
+180-deg *       1        |         4       |         1        *
+        *******************************************************
+        Figure 1: Rank of estimated hit rate
+
+         adds/subs multiplies divs/mods compares loads hit-rate stores hit-rate
+180 deg ************************************************************************
+row-maj *    6    |     2    |    0    |    0   | 2/64 | 63/64 | 1/64 |  63/64 *
+col-maj *    6    |     2    |    0    |    0   |   2  |   0   |   1  |    0   *
+blk-maj *    7    |     3    |    6    |    0   | 2/64 | 63/64 | 1/64 |  63/64 *
+        *         |          |         |        |      |       |      |        *
+90 deg  *         |          |         |        |      |       |      |        *
+row-maj *    4    |     2    |    0    |    0   | 65/64| 63/128|   1  |    0   *
+col-maj *    4    |     2    |    0    |    0   | 65/64| 63/128| 1/64 |  63/64 *
+blk-maj *    5    |     3    |    6    |    0   | 2/64 | 63/64 | 1/64 |  63/64 *
+        ************************************************************************
+        Figure 2: Summary of operations from part D
+
+       ******************************************************************
+       * NOTE: The same image and computer was used in all experiments. *
+       *       The computer was the "homework" server and the number of *
+       *       total pixels was 37372800.                               *
+       ******************************************************************
+
+             Total Time     Time/Pixel    Operations
+           *******************************************
+rotate   0 * 3534886742.0 |     94.6    |     95     *
+rotate  90 * 6770675514.0 |    181.2    |    182     *
+rotate 180 * 3701927025.0 |     99.1    |    100     *
+rotate 270 * 6666441843.0 |    178.4    |    179     *
+horizontal * 3450904527.0 |     92.3    |     93     *
+vertical   * 3707207637.0 |     99.2    |    100     *
+transpose  * 6430688541.0 |    172.1    |    173     *
+           *******************************************
+           Figure 3: row-major time measurements
+
+             Total Time     Time/Pixel    Operations
+           *******************************************
+rotate   0 * 9996346440.0 |    267.5    |    268     *
+rotate  90 * 6272511008.0 |    167.8    |    168     *
+rotate 180 * 9692278364.0 |    259.3    |    260     *
+rotate 270 * 6049139203.0 |    161.9    |    162     *
+horizontal * 9201342732.0 |    246.2    |    247     *
+vertical   * 9968710549.0 |    266.7    |    267     *
+transpose  * 6484648425.0 |    173.5    |    174     *
+           *******************************************
+           Figure 4: col-major time measurements
+
+             Total Time     Time/Pixel    Operations
+           *******************************************
+rotate   0 * 7372386080.0 |    197.3    |    198     *
+rotate  90 * 7586591168.0 |    203.0    |    204     *
+rotate 180 * 8452867958.0 |    226.2    |    227     *
+rotate 270 * 8952398211.0 |    239.5    |    240     *
+horizontal * 8157002976.0 |    218.3    |    219     *
+vertical   * 7453111427.0 |    199.4    |    200     *
+transpose  * 6909281109.0 |    184.9    |    185     *
+           *******************************************
+           Figure 5: block-major time measurements
+
+- Observing Figures 1-5 below, it is clear that were correctly predicted the 
+  behavior of row-major and col-major order in terms of magnitude of
+  performance. It was our conjecture that block-major order would suffer from
+  additional mathematical operation, but it was surprising to see that the extra
+  time for these operations was enough to bridge the gap between row-major and
+  col-major. For clarity, while block-major order has great locality for all
+  transformation types, it pays an extra cost for mathematical operations
+  which brings its performance on average to that of col-major.
+- row-major and col-major's performance was the most informative in terms of
+  locality. This is because they have the exact same amount of math as each
+  other. As seen in figure 2, row-major rotate0 and rotate180 performed
+  extremely fast, while col-maj rotate180 was very slow. Row-major and col-major
+  rotate90 additionally, were correctly predicted to be in the middle of that
+  with col-major being a little faster.
+
+
+EXAMPLE log format:
+**********************************
+
+All work done on "homework server"
+Rotation:                       90
+Map category:            row-major
+Number of pixels:         37372800
+Total Time:           6770675514.0
+Time Per Pixel:              181.2
+
+**********************************
+
+All work done on "homework server"
+Rotation:                      180
+Map category:            row-major
+Number of pixels:         37372800
+Total Time:           3701927025.0
+Time Per Pixel:               99.1
+
+
+Hours spent on this project: 36
+
+
+
+
+
+
+
+
+
+
+
+
+

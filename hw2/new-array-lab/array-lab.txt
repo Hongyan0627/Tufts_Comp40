@@ -1,0 +1,154 @@
+                COMP 40 Lab: Unboxed and 2D Arrays
+
+
++--------------------------------------------------------+
+|Keeper of the record: Derick Yang                       |
+|--------------------------------------------------------|
+| Other group member(s): Hongyan Wang                    |
+|                                                        |
+|                                                        |
+|                                                        |
++--------------------------------------------------------+
+
+
+PART 1: BOXED AND UNBOXED ARRAYS
+--------------------------------
+
+You are about to design the interface and implementation for a
+collection data type, I.e. an ADT like Hanson's, and you are
+considering the tradeoffs between using a boxed or an unboxed
+interface for values that users store in your collection.
+
+1A: Briefly define the terms "boxed" and "unboxed" as used for these
+    interfaces (I.e. help us be sure you know which is which!):
+Boxed: A collection is composed of pointers to the actual data.
+
+Unboxed: The collection stores the data rather than a pointer to
+the data.
+
+
+
+1B: List two (or more) advantages of the boxed representation.
+1. The client is responsible for keeping track of how much memory 
+the structure uses.
+2. The collection doesn't need to know the type of the data.
+The data can be polymorphic (ie, we can use a void pointer).
+3. The actual data may be very large, but we are guaranteed the
+size of the pointer to be 8 bytes (in our system, anyway).
+
+1C: List two (or more) advantages of an unboxed representation.
+1. We are in control of both the data in the array and the array 
+itself.
+2. Much easier to use homogeneous types.
+3. For smaller, homogeneous data types that are smaller than
+8 bytes, we save space by using an unboxed representation.
+
+
+1D: Look at the interface to UArray (the pointer to an interface
+    summary is in the lab instructions). Discuss the methods that show
+    the use of the unboxed style. Why, for example, does UArray_new
+    take both a number of elements and an element size? 
+
+Unlike for Hanson data structures, we are asked for an element size
+and number of elements when we use a UArray. This is because the
+Unboxed array needs to know exactly how much space we need before 
+initialization. Since we are storing the data itself, UArray needs
+to know exactly how much space we need.
+
+
+
+PART 2: 2D Arrays from 1D Arrays
+--------------------------------
+
+2A. One way to construct a 2D array is to use multiple 1D
+    arrays. Describe briefly how you would do this. For example, if
+    the user asked you to create a 7x5 array of values, how many
+    one-dimensional arrays would you create? If the user asked to
+    store a value in cell [3,6] where would it go?
+
+We create an array of size 7, each element of this array is a
+pointer to an array of size 5.
+
+When we store a value in [3,6], we get the subarray from index 6 of
+the primary array, follow the pointer, and then go to index 3 of
+the secondary array (which is size 5).
+
+
+
+
+
+
+2B. Another approach is to use a single one-dimensional array and to
+    put all the elements of the 2D array into that. Again, assumingg
+    that you are to create a 7x5 2D array, give a mathematical formula
+    for the index in the 1D array where a value [x,y], would go in the
+    1D array.
+
+We create an array of size 7x5=35 to store all of our values.
+For the [x,y]th index, we use index 5x + y to store the value.
+
+
+
+
+
+
+2C. (optional) is there another mapping that would work as well?
+
+
+
+
+
+
+
+
+
+
+
+
+PART 3: Designing the UArray2 Interface
+---------------------------------------
+
+3A. Describe three (or more) things you learned about the design 
+and semantics of
+    the UArray2 interface that you learned from reading useuarray2.c
+    and from running correct_useuarray2.
+
+The UArray2 has a width, height, and size property, and it can
+also map functions onto every element in the array. It also has an
+at() function, which will return the value at an array/
+
+useuarray2.c initializes an array with DIM1 width, DIM2 height, and
+elements of size ELEMENT_SIZE. It then checks if the array was 
+created correctly.
+
+void check_and_print(int i, int j, UArray2_T a, void *p1, void *p2)
+is a function that gets mapped to every element in the 2D array
+i is the column, j is the row, a is the array we want to check,
+p1 is a pointer to the value (type long) stored in this index
+in the array, and p2 is a boolean to check that we have filled the 
+array correctly.
+
+We will have to implement the following functions:
+T *UArray2_new(int width, int height, size);
+
+void UArray2_map_col_major(test_array, check_and_print, bool *ok);
+
+void *UArray2_at(test_array, int width, int height);
+
+int UArray2_width(test_array);
+
+int UArray2_height(test_array);
+
+int UArray2_size(test_array);
+
+void UArray2_free(&test_array);
+
+
+NOTE: i corresponds to row, j corresponds to column
+
+we will use row and col to denote the row and column from now on
+
+
+
+
+

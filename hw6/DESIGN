@@ -1,0 +1,167 @@
+                        COMP 40 Lab: hw6 design document
+
+
+Partners:
+
+Partner 1:  Name Peter Vondras      Login peter
+
+Partner 2:  Name Hongyan Wang       Login hwang10
+
+Date: 04-05-16
+
+summary: This document contains the design of the UM and Segmenter
+
+Module and Interfaces:
+        - Main program calls UM Loader and UM. Program will EXIT_FAILURE if
+            proper input is unavailable. For example if the file does not open.
+        - UM_Loader: loads users instructions for the UM to execute.
+                - void Load_Program(char *fileName) allocates users program on
+                    the heap and sends the segmenter a pointer to it.
+        - UM: reads instructions in segment $m[0], and calls the corresponding
+            instruction functions.
+                - void Run_Program(segment_t *segmenter) starts instruction 
+                    execution cycle.
+                - void read_next_instruction(uint32_t program_counter) Extracts 
+                    instruction code using code_extractor() and call appropriate
+                    action. Note that simple actions (i.e. multiply) are 
+                    implemented in-line.
+                - void segmented_load(uint32_t *registers, uint8_t rA,
+                    uint8_t rB, uint8_t rC) loads value to $r[A].
+                - void segmented_store(uint32_t *registers, uint8_t rA,
+                    uint8_t rB, uint8_t rC) implements instruction number 2.
+                - void load_program(uint32_t *registers, uint8_t rB, uint8_t rC)
+                    implements instruction number 12.
+                - void load_value(uint32_t *registers, uint8_t rA,
+                    uint32_t value) implements instruction number 13.
+                - uint32_t getRegister(uint32_t *registers, uint32_t *registers,
+                    uint8_t rX) given a register number (rX), getRegister will
+                    return the value in, said register.
+        - segmenter: Access, allocates, deallocates and writes to actual 
+            segments.
+                - Seg_T segmenter_new() returns a new seg with heap
+                    allocated memory.
+                - uint32_t map_segment(Seg_T seg, uint32_t size) maps
+                    a segment and returns a segment ID. A checked runtime error
+                    will be thrown if resources are not able to be allocated.
+                    It is a checked runtime error to map more than 2^33-2
+                    segments. Note the -2 accounts for the program being loaded
+                    at segment 0. It is a checked runtime error to request a
+                    segment of negative size.
+                - void unmap_segment(Seg_T seg, uint32_t ID) 
+                    Deallocates requested segment ID.
+                - uint32_t *get_segment_address(Seg_T seg,
+                    uint32_t ID) given a segment ID, returns the memory address
+                    of that segment.
+                - uint32_t *map_zero(Seg_T seg, uint32_t size) maps
+                    segment 0 of size "size" and returns a pointer to it.
+                - void segmenter_free(Seg_T *seg_p) returns a new 
+                    segmenter with heap allocated memory.
+        - code_extractor: knows which bits hold what in the word instructions
+                - instruction_A *parse_A(uint32_t instruction) returns an 
+                    instruction_A struct pointer, which has opcode, rA, rB, rC
+                    all as chars.
+                - instruction_B *parse_B(uint32_t instruction) returns an 
+                    instruction_B struct pointer, which has opcode, rA as chars
+                    and value as a uint32_t.
+
+Architecture:
+- The main program calls the UM_Loader. The loader will use UM and segmenter 
+    functions to load program into segment 0. Main then calls the UM to run.
+- The UM, reads instructions with the help of the code_extractor. It will
+        perform all instructions except map_segment and unmap_segment which will
+        be performed by the segmenter. The UM has the registers stored in an
+        array, where the 9th element is the program counter.
+- The segmenter is described in detail below.
+
+UM test cases:
+- Map 100 segments of size x. Store a unique set of words in each segment. try
+    to retrieve the unique word sequences and ensure they have not been
+    malformed.
+- Map 100 segments of size x. Unmap them all but the highest. Repeat 1000 times
+    and ensure that memory stays capped at the size of the 100 segments. This
+    test should be run using the memory cap program.
+- Test conditional move: 
+        - For all combinations of A, B and C test:
+                - Set $r[C] = 0, $r[A] = 10, $r[B] = 20. use
+                    conditional_move command and ensure that $r[A] == 10.
+                - Set $r[C] = 100, $r[A] = 10, $r[B] = 20. use
+                    conditional_move command and ensure that $r[A] == 20.
+- Test each command using register 10. A checked runtime error should result.
+- Test adding numbers which overflow 32 bits and ensure the mod 2^32 is
+    functioning.
+- Test multiple:
+        - multiply numbers by 2^n to test the shifting operation. 
+- test divide:
+        - divide by 2^n to set shifting.
+        - test result of rounding operations on fractions.
+- Test NAND: Generate all numbers from 0 to 1000000 and randomly NAND
+    combinations of them together while comparing their result with our
+    solution.
+- Halt the program and ensure that no error occurs.
+- Send the UM a filename that does not exist and ensure that it returns 1 and
+    does not print to stdout.
+- Send the UM two files and ensure the same behavior as the test above.
+- Try to unmap segment 0 or to map segment 0 and ensure a checked runtime error.
+- Send the UM a program which writes a program which outputs to stdout "WINNER"
+    to a segment. Use the Load_Program instruction to load and run this program.
+    Ensure that the output matches what is expected. Ensure that the program
+    does not continue running the old program after it is done.
+- Send the UM a program which writes a program which is larger than the original
+    program to ensure that it is written to a new segment.
+- Send the UM a program which writes a program in a segment X and loads segment
+    X as the program running. The new program will write into segment X a halt
+    command before the output which signifies success. This will ensure that 
+    the UM successfully duplicates segment X instead of just pointing at it.
+- Send the UM a program which is longer than 2^33-1 instructions where the last
+    instruction is to output some success marker. The UM should output the
+    marker.
+- Ensure load program loads last instruction
+
+Segmenter Representation:
+- The segmenter will use a Hanson sequence to store pointers to segmented
+    memory. The index of that pointer will be the segment number. A maxSegNum 
+    integer variable will be stored to keep track of the highest index value so
+    that the segmenter will be able to assign new segment numbers when needed.
+- Additionally, there will be another Hanson sequence which will be used as a
+    stack to keep track of any segments in the segment sequence which have been
+    unmapped. The pointer value that the stack stores will actually be a 
+    uintptr_t which will represent a unique segment ID that has been unmapped.
+- When a segment mapping is requested, the segmenter will first check the stack
+    to see if there is a segment ID that can be reused, but would then assign a
+    new one if the stack was empty. 
+- A segment is an array of uint32_t's of the requested size + 1. Index 0 holds
+    the size of the array not including itself. So if the user requested a
+    segment of size three, the first index of the segment will contain the
+    number 3. When unmapping a segment, the memory pointed to will be 
+    deallocated.
+
+Segmenter Invariants:
+- All segments in sequence are located at index == segment ID.
+- If stack is empty when segment_map is requested, all segment ID's from 
+    0 to maxSegNum are actively mapped and therefore the next segment number is
+    maxSegNum + 1.
+- If stack is not empty, most recently unmapped segment ID is on the top of the
+    stack.
+
+Segmenters relationship to the world of ideas:
+- The segmenter stores pointers to heap allocated memory. The world of ideas
+        uses segment ID's which have no numerical relation to pointer value or
+        location in computer memory. The segmenter systematically links the two
+        so as to affectively implement 32 bit pointers int 64 bit architecture.
+
+Test Cases:
+- Map 100 or so segments. Unmap 50 of them. Map 51 segments and ensure that no
+    new (not previously used) are given out until the 51st ID which would 
+    affectively be the 101st.
+- run valgrind after unmap to ensure heap allocated memory has been freed.
+- Map 100 segments of size x. Write a string of words filling the segment in
+    each. Request the address of each segment and ensure that it is still
+    intact.
+- Map and unmap a segment of size 0 2^33 times which should result in NO
+    problems as the same ID space will be recycled.
+- Test creation and writing of special segment 0.
+- Test segment size which is written into the first memory slot of the segment.
+
+
+
+

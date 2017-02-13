@@ -1,0 +1,280 @@
+/lib64/ld-linux-x86-64.so.2
+__gmon_start__
+libc.so.6
+socket
+cuserid
+fflush
+strcpy
+exit
+sprintf
+fopen
+__isoc99_sscanf
+connect
+signal
+puts
+stdin
+rewind
+strtol
+fgets
+tmpfile
+stdout
+fputc
+fclose
+strcasecmp
+getenv
+__ctype_b_loc
+system
+gethostbyname
+gethostname
+fwrite
+bcopy
+fprintf
+sleep
+__libc_start_main
+GLIBC_2.3
+GLIBC_2.7
+GLIBC_2.2.5
+5"& 
+%$& 
+%"& 
+%z% 
+%r% 
+%j% 
+%b% 
+%Z% 
+%R% 
+%J% 
+%B% 
+%:% 
+%2% 
+%*% 
+UH-pA`
+UH-pA`
+=!3 
+u_UH
+=8! 
+t	92
+090~
+=2. 
+ATUSH
+t$:E
+[]A\
+ATUSH
+[]A\
+SHc=
+ATUSH
+nobof
+[]A\
+fffff.
+l$ L
+t$(L
+|$0H
+%s: Error: Couldn't open %s
+Usage: %s [<input_file>]
+That's number 2.  Keep going!
+Halfway there!
+Good work!  On to the next...
+Welcome to my fiendish little bomb. You have 6 phases with
+which to blow yourself up. Have a nice day!
+Phase 1 defused. How about the next one?
+So you got that one.  Try this one.
+This is actually not an entirely terrible idea.
+Wow! You've defused the secret stage!
+giants
+isrveawhobpnutfgSo you think you can stop the bomb with ctrl-c, do you?
+Your instructor has been notified.
+Curses, you've found the secret phase!
+But finding it and solving it are quite different...
+Congratulations! You've defused the bomb!
+Your instructor has been notified and will verify your solution.
+Well...
+OK. :-)
+Invalid phase%s
+Bad host (1).
+Bad host (2).
+Bad host (3).
+Bad host (4)
+Bad host (5).
+www.google.com
+defused
+exploded
+ERROR: dup(0) error
+ERROR: close error
+ERROR: tmpfile error
+Subject: Bomb notification
+bomb-header:%s:%d:%s:%s:%d
+bomb-string:%s:%d:%s:%d:%s
+bomb
+/usr/sbin/sendmail -bm
+%s %s@%s
+ERROR: notification error
+ERROR: fclose(tmp) error
+ERROR: dup(tmpstdin) error
+ERROR: close(tmpstdin)
+BOOM!!!
+The bomb has blown up.
+%d %d %d %d %d %d
+Error: Premature EOF on stdin
+GRADE_BOMB
+Error: Input line too long
+%d %s
+Ozymandias
+dell13.eecs.tufts.edu
+dell13
+dell14.eecs.tufts.edu
+dell14
+dell24.eecs.tufts.edu
+dell24
+dell25.eecs.tufts.edu
+dell25
+dell26.eecs.tufts.edu
+dell26
+lab116a.eecs.tufts.edu
+lab116a
+lab116b.eecs.tufts.edu
+lab116b
+lab116c.eecs.tufts.edu
+lab116c
+lab116d.eecs.tufts.edu
+lab116d
+lab116e.eecs.tufts.edu
+lab116e
+lab116f.eecs.tufts.edu
+lab116f
+lab116g.eecs.tufts.edu
+lab116g
+lab116h.eecs.tufts.edu
+lab116h
+lab116i.eecs.tufts.edu
+lab116i
+lab116j.eecs.tufts.edu
+lab116j
+lab116k.eecs.tufts.edu
+lab116k
+lab116l.eecs.tufts.edu
+lab116l
+lab116m.eecs.tufts.edu
+lab116m
+lab116n.eecs.tufts.edu
+lab116n
+lab116o.eecs.tufts.edu
+lab116o
+lab116p.eecs.tufts.edu
+lab116p
+lab116q.eecs.tufts.edu
+lab116q
+lab116r.eecs.tufts.edu
+lab116r
+lab116s.eecs.tufts.edu
+lab116s
+lab116t.eecs.tufts.edu
+lab116t
+lab116u.eecs.tufts.edu
+lab116u
+lab116v.eecs.tufts.edu
+lab116v
+lab116w.eecs.tufts.edu
+lab116w
+lab116x.eecs.tufts.edu
+lab116x
+lab118a.eecs.tufts.edu
+lab118a
+lab118b.eecs.tufts.edu
+lab118b
+lab118c.eecs.tufts.edu
+lab118c
+lab118d.eecs.tufts.edu
+lab118d
+lab118e.eecs.tufts.edu
+lab118e
+lab118f.eecs.tufts.edu
+lab118f
+lab118g.eecs.tufts.edu
+lab118g
+lab118h.eecs.tufts.edu
+lab118h
+lab118i.eecs.tufts.edu
+lab118i
+lab118j.eecs.tufts.edu
+lab118j
+lab118k.eecs.tufts.edu
+lab118k
+lab118l.eecs.tufts.edu
+lab118l
+lab118m.eecs.tufts.edu
+lab118m
+lab118n.eecs.tufts.edu
+lab118n
+lab118o.eecs.tufts.edu
+lab118o
+lab118p.eecs.tufts.edu
+lab118p
+lab118q.eecs.tufts.edu
+lab118q
+lab118r.eecs.tufts.edu
+lab118r
+lab118s.eecs.tufts.edu
+lab118s
+lab118t.eecs.tufts.edu
+lab118t
+lab118u.eecs.tufts.edu
+lab118u
+lab118v.eecs.tufts.edu
+lab118v
+lab118w.eecs.tufts.edu
+lab118w
+lab118x.eecs.tufts.edu
+lab118x
+lab120a.eecs.tufts.edu
+lab120a
+lab120b.eecs.tufts.edu
+lab120b
+lab120c.eecs.tufts.edu
+lab120c
+lab120d.eecs.tufts.edu
+lab120d
+lab120e.eecs.tufts.edu
+lab120e
+lab120f.eecs.tufts.edu
+lab120f
+lab120g.eecs.tufts.edu
+lab120g
+lab120h.eecs.tufts.edu
+lab120h
+lab120i.eecs.tufts.edu
+lab120i
+lab120j.eecs.tufts.edu
+lab120j
+lab120k.eecs.tufts.edu
+lab120k
+lab120l.eecs.tufts.edu
+lab120l
+lab120m.eecs.tufts.edu
+lab120m
+lab120n.eecs.tufts.edu
+lab120n
+lab120o.eecs.tufts.edu
+lab120o
+lab120p.eecs.tufts.edu
+lab120p
+lab120q.eecs.tufts.edu
+lab120q
+lab120r.eecs.tufts.edu
+lab120r
+lab120s.eecs.tufts.edu
+lab120s
+lab120t.eecs.tufts.edu
+lab120t
+lab120u.eecs.tufts.edu
+lab120u
+lab120v.eecs.tufts.edu
+lab120v
+sunfire47.eecs.tufts.edu
+sunfire47
+sunfire61.eecs.tufts.edu
+sunfire61
+sunfire62.eecs.tufts.edu
+sunfire62
+sunfire63.eecs.tufts.edu
+sunfire63
+comp40spring16

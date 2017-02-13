@@ -1,0 +1,94 @@
+This is bomb 13 for lab comp40spring16.
+
+It is owned by the following student(s):
+Josie Barth: josephine.barth@tufts.edu
+Hongyan Wang: hongyan.wang@tufts.edu
+
+For all parts of this project, we have received helped from Course TAs when we
+ran into problems.
+
+Hours Spent: 24
+Bomb number: 13
+
+PHASES
+
+1) Phase 1 compares the input string to the string "This is actually not an
+entirely terrible idea." and determines if the two strings are equal (the
+same.)  The bomb expldoes if the strings are not equal.  Otherwise, the phase
+is defused.
+
+2) Phase 2 reads six numbers from the input string using sscanf.  If there are
+less than 6 numbers, the bomb explodes.  Then, the phase checks if these six
+numbers follow the pattern: x, x+5, x+10, x+15, x+20, x+ 25.  If so, the phase
+is defused, else the bomb explodes.
+
+3) Phase 3 reads two numbers from the input string using sscanf.  If there are
+less than 2 numbers, the bomb explodes.  The first number is the switch case
+number, which should be less than or equal to 7.  If not, the bomb explodes. 
+The second number specified by the user is the switch case value, which should
+equal the number at the given switch case.  If the user's value does
+not equal the value at the switch case, the bomb explodes, else the phase is
+defused. 
+
+4) Phase 4 reads in exactly one number from the input string using sscanf, else
+the bomb explodes.  If the number itself is less than or equal to zero, the
+bomb explodes.  Then, the phase calles func4, which computes the factorial of
+the user's input.  If the return value equals 5040 (7!), the phase is defused,
+else the bomb explodes.
+
+5) Phase 5 takes the user's input string and if its length does not equal 6,
+the bomb explodes.  The low order 4 bits of each character in the user's string
+is the index of a corresponding character in a global variable string
+"isrveawhobpnutfg".  We calculate this index by modding each character in the
+user's string by 16.  The character in the global string specified by the
+corresponding index replaces the user's offset character.  If this resulting
+string is equal to "giants", the phase is defused, else the bomb explodes.
+
+6) Phase 6 takes the user's input string and calls strtol, which returns the
+long interger value of the string.  Then, this value is stored as the data
+member in node_0.  This node is then passed as the arugument to fun_6. 
+Fun_6 bubble sorts the linked list of 10 nodes (node_0 - node_9), and then
+returns when finished.  
+
+The unordered linked list looks like this (without the user's node):
+
+  722 -> 655 -> 888 -> 781 -> 480 -> 246 -> 599 -> 862 -> 158 ->NULL
+  
+The ordered linked list looks like this (without the user's node):
+
+  888 -> 862 -> 781 -> 722 -> 655 -> 599 -> 480 -> 246 -> 158 ->NULL
+
+
+If the 5th node in the ordered linked list is the user's input value, then the
+phase is defused, else the bomb explodes.  Thus as we can see by the picture,
+the user's node value x must be: 655 <= x <= 722.  So the final correct linked
+list would look like this:
+
+  888 -> 862 -> 781 -> 722 -> USER_VAL -> 655 -> 599 -> 480 -> 246 -> 158 ->NULL
+
+7) The secret phase reads a line of input and then calls strtol, which returns
+the long interger value of the string.  If this number is greater than 1001,
+the bomb explodes.  Then the user's input is passed as the argument to fun_7. 
+Fun_7 is a recursive binary search tree function, and the BST looks something
+like this:
+
+                                36
+                             /     \
+                            /       \
+                          8          50
+                           \           \
+                            \           \
+                             22         107
+                              \           \
+                               \           \
+                                35        1001
+                                
+For every node, if the user's number is greater the value at that node, the
+function will return: (2 * fun_7(num, BST->right) + 1).  If the user's number
+is less than the value at that node, the function will return: (2 * fun_7(num,
+BST->left)).  Else if the user's number equal the value at that node, the
+function returns 0.  After all the rescurive calls, if the final return value
+equals 6, the phase is defused, else the bomb explodes.  From the picture, we
+know that the user's input should be 35. 
+
+

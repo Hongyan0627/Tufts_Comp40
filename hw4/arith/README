@@ -1,0 +1,55 @@
+                        COMP 40 HW 4: README
+
+
+Partners:
+
+Partner 1:  Ryan Schneiderman      Login rschne01
+
+Partner 2:  Hongyan Wang       Login hwang10
+
+*****************************************************************************
+
+Acknowledgments:
+        - Received help from TA's but otherwise only collaborated with each 
+           other.
+        
+
+Implementation:
+        - To our knowledge both the decompression and compression have been 
+          implemented fully and correctly
+
+Architecture:
+        - Our overall program was structured into modules with each module 
+          holding one step for compression and its inverse (or corresponding 
+          step) for decompression. We chose to structure it in this way because
+          each level of the conversion process needs to know the same 
+          information for both compression and decompression. In total we had 
+          four modules:
+
+            - image_io           
+               -  handles reading from input and printing output
+            - rgb_cv_trans       
+               -  handles converting Pnmppm image to a component video image 
+                  representation and the inverse conversion.
+            - cv_codeword_trans  
+               -  handles converting from a component video representation 
+                  to a binary image
+            - bitpack
+               -  handles packing, unpacking, and changing bits in a 64 bit 
+                  word
+
+        - For the modules which handle conversions between images, namely 
+          rgb_cv_trans and cv_codeword_trans, we map through an image applying
+          a conversion function to each pixel representation. The result is 
+          placed in a separate two-dimensional image representation which is 
+          either used in the next conversion step, or sent to output.
+
+        - The modules listed are used in compress40 which is in turn used by 
+          the client, in our case 40image. As a result of this abstraction, 
+          the methods of conversion are hidden from the client; all the client
+          needs to do is specify compression or decompression.
+
+Time Spent Analyzing Problem:
+        ~15 hours
+Time Spent Solving Problems After Analysis:
+        ~25 hours

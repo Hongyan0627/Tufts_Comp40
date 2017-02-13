@@ -1,0 +1,29 @@
+// Comp40 Homework 8
+// By: Josie Barth and Hongyan Wang
+// April 23rd 2016
+
+.section init
+        .temps r6, r7
+.section stk
+        .space 100000 // this is the callstack
+        endstack:
+        .space 10000  // this is the value_stacl
+        value_stack:
+.section init
+        .zero r0
+        _ustart:
+                r0 := 0
+                r2 := endstack
+                goto F linking r1
+                output "hello world\n"
+                halt
+                
+.section text
+        main:
+                goto F linking r1
+        
+        F:
+                push r1 on stack r2
+                output "in f\n"
+                pop r1 off stack r2
+                goto r1

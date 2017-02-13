@@ -1,0 +1,140 @@
+                        COMP 40 Lab: hw3 estimates
+
+
+Partners:
+
+Partner 1:  Name Peter Vondras      Login peter
+
+Partner 2:  Name Hongyan Wang       Login hwang10
+
+Date: 02-21-16
+
+summary: This document contains the estimates from section D.
+
+*******************************************************************************
+ 
+         row-maj access    col-maj access    block-maj access
+        *******************************************************
+ 90-deg *       3        |         2       |         1        *
+180-deg *       1        |         4       |         1        *
+        *******************************************************
+        Figure 1: Rank of estimated hit rate
+
+- We created a diagram and tested each of the aboves behavior. What we found was
+  that for 90-deg and 180-deg rotation, block-major for both read and write,
+  experiences misses only on the first element in a block and then exhausts the
+  entire block before requesting new blocks. The blocks effectively nullify 
+  the issue seen later that occurs when there is a stride created by the jumps
+  that column major order creates.
+- We rated row-major access for 180-deg rotation the same as the block access
+  because it does not ever have to deal with stides in memory access. To be
+  more explicit, it walks down (and up) the memory in the order that it was
+  stored.
+- 90-deg col major experienced slow reads for accessing the original image but
+  had a fast read and store behavior for manipulating the final image.
+- 90-deg rotation using row-maj access experienced good spatial locality for
+  reads as it accessed memory in sequential order, but the write operations
+  resulted in a read_to_write miss every time. It was followed by an eviction
+  and therefore a slow store as well. Note this is the case if the cache is not
+  large enough to hold more than an entire row. 
+- 180-deg col-maj access experiences a miss for every read and every
+  write as it strides down the memory for both reads and writes. This results
+  in the worst memory behavior.
+
+
+         adds/subs multiplies divs/mods compares loads hit-rate stores hit-rate
+180 deg ************************************************************************
+row-maj *    6    |     2    |    0    |    0   | 2/64 | 63/64 | 1/64 |  63/64 *
+col-maj *    6    |     2    |    0    |    0   |   2  |   0   |   1  |    0   *
+blk-maj *    7    |     3    |    6    |    0   | 2/64 | 63/64 | 1/64 |  63/64 *
+        *         |          |         |        |      |       |      |        *
+90 deg  *         |          |         |        |      |       |      |        *
+row-maj *    4    |     2    |    0    |    0   | 65/64| 63/128|   1  |    0   *
+col-maj *    4    |     2    |    0    |    0   | 65/64| 63/128| 1/64 |  63/64 *
+blk-maj *    5    |     3    |    6    |    0   | 2/64 | 63/64 | 1/64 |  63/64 *
+        ************************************************************************
+        Figure 2: Summary of operations
+
+
+Exlanation of table results: Note that we assumed a block size of 64 ints.
+        Additionally, we broke each calculation into three steps. Also, please
+        note that we have 0 compares in our entire table. This is due to the
+        fact that we decide which type of transformation to do in the beginning
+        of the process (not in the mapping apply function) and therefore 
+        omit its affect as it will be negligible. We also assumed repetitive 
+        "for loops" and function calls to take 0 time.
+                - The first step was the mapping functions work which included
+                  transformations from 1D arrays to 2D arrays and back again.
+                - The second step was done by the apply function to translate
+                  the original coordinates to the transformed coordinates.
+                - The third step was also done by the apply function to store
+                  the copied value.
+
+- 180-row-major: 
+        - Step one included a mult, an add and a load. The load will miss
+          1/64 times as we are reading in memory order which is the same as the
+          memory storage.
+        - Step two involved 4 subtractions
+        - Step three has the exact same math operations as step one and a load
+          and store. The load was of the final image and will miss 1/64 times
+          as it is also in line with the memory storage. The store will only
+          have to write from the cache to main memory when the entire block is
+          evicted and will therefore miss 1/64 times.
+- 180-col-major: 
+        - Step one has the exact same math operations as 180-row-major BUT the
+          load will miss every time if we can assume that an entire row does not
+          fit in the cache. This is because we have introduced a image_width
+          stride. This will always happen when using col-maj traversal or row
+          major storage.
+        - Step two has the exact same math operations as 180-row-major.
+        - Step three has the exact same math operations as step one. It also 
+          have a load and a store. The load and store will miss every time if
+          we can assume that an entire row does not fit in the cache. This is
+          because we have introduced a image_width stride forcing each store to
+          be written to main memory as it is evicted. This will always happen
+          when using col-maj traversal or row major storage.
+- 180-blk-major: 
+        - Step one included a 2 divides, 2 mods, a multiplication, an add and a
+          load. The load will miss 1/64 times as we are reading in memory order
+          which is the same as the memory storage.
+        - Step two has the exact same math operations as 180-row-major.
+        - step three involved an 2 adds, 2 multiplications, a mod, a division,
+          a load and store. The load was of the final image and will miss 1/64
+          times as it is also in line with the memory storage. The store will
+          only have to write from the cache to main memory when the entire
+          block is evicted and will therefore miss 1/64 times.
+
+- 90-row-major: 
+        - Step one included a mult, an add and a load. The load will miss
+          1/64 times as we are reading in memory order which is the same as the
+          memory storage.
+        - Step two involved 2 subtractions
+        - Step three has the exact same math operations as step one and a load
+          and store. The load and store was for the final image and will miss
+          every time. This is due to the image-width stride that is occurring.
+          We assume that the cache cannot hold an entire line of pixels.
+- 90-col-major: 
+        - Step one has the exact same math operations as 180-row-major BUT the
+          load will miss every time if we can assume that an entire row does not
+          fit in the cache. This is because we have introduced a image_width
+          stride. This will always happen when using col-maj traversal or row
+          major storage.
+        - Step two has the exact same math operations as 180-row-major.
+        - Step three has the exact same math operations as step one. It also 
+          have a load and a store. The load from the original will miss every
+          time if we can assume that an entire row does not fit in the cache. 
+          This is because we have introduced a image_width stride forcing each
+          store to be written to main memory as it is evicted. This will always
+          happen when using col-maj traversal or row major storage. The load
+          and store for the writing process will on the final image will miss 
+          only 1/64 times as it will be in line with the memory storage.
+- 90-blk-major: 
+        - Step one included a 2 divides, 2 mods, a multiplication, an add and a
+          load. The load will miss 1/64 times as we are reading in memory order
+          which is the same as the memory storage.
+        - Step two has the exact same math operations as 90-row-major.
+        - step three involved an 2 adds, 2 multiplications, a mod, a division,
+          a load and store. The load was of the final image and will miss 1/64
+          times as it is also in line with the memory storage. The store will
+          only have to write from the cache to main memory when the entire
+          block is evicted and will therefore miss 1/64 times.

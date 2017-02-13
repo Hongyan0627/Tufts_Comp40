@@ -1,0 +1,37 @@
+                        COMP 40 HW 7: README
+
+
+Partners:
+
+Partner 1:  Peter Vondras      Login peter
+
+Partner 2:  Hongyan Wang       Login hwang10
+
+********************************************************************************
+
+Acknowledgments:
+        - We were helped by several of the course staff including but not
+          limited to Carter Casey and Tom Hebb.
+        - We used the course website for guidelines and guidance.
+        - We utilized the benchmark programs midmark.um, advent.umz and 
+            sandmark.umz to measure our progress.
+        - We also referenced numerous Piazza.
+
+Routine taking most time: Our programs most expensive operation is the for loop
+                          and switch statement which executes each command. To 
+                          be more clear, there are seven assembly instructions
+                          which increment the counter, jumps program to top of 
+                          loop and accesses the jump table built by the switch 
+                          statement. These actions, while taking 28% of our 
+                          programs time, are necessary. The other large time 
+                          sink is in memory allocation/deallocation and 
+                          initializing new memory to a zero state. This is a 
+                          critical task which must be done. Finally, some small
+                          amount of time could be saved by breaking the Seg.h 
+                          abstraction barrier, but it was not deemed significant
+                          and therefore was left along. This time would be
+                          mainly saved by reducing the number of pointers
+                          followed in order to access a segment address.
+Time Spent:
+        - Analyzing                             5  hours
+        - Solving Problems after Analysis       8 hours

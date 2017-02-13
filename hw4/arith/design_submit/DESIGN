@@ -1,0 +1,468 @@
+                        COMP 40 : hw4 design document
+
+
+Partners:
+
+Partner 1:  Name Ryan Schneiderman      Login rschne01
+
+Partner 2:  Name Hongyan Wang       Login hwang10
+
+Date: 02-27-16
+
+summary: This document contains the design document for Part A and B.
+
+
+*******************************************************************************
+*                                   PART A                                    *
+*******************************************************************************
+
+1. What problem are you trying to solve?
+
+        - We want to convert between full-color portable pixmap images and
+          compressed binary image files.
+
+2. What example inputs will help illuminate the problem?
+
+        - If the input file is nrs-paper.ppm, then we call
+          40image -c nrs-paper.ppm.
+        - If the input file is some binary image file, then we call
+          40image -d [some binary image file]
+
+3. What example outputs go with those example inputs?
+
+        - If the input file is nrs-paper.ppm, the output will be a compressed
+          binary image file with header "COMP40 Compressed image format 2" in
+          the first row and width, height in the second row.
+        - If the input file is some binary image file, the output will be a ppm
+          image.
+
+4. Into what steps or subproblems can you break down the problem?
+
+        For compression:
+
+          - 1. Read a PPM image from a file specified on the command line or
+               from standard input.
+          - 2. Check whether width and height of the image are even, if not, we
+               need trim the last row and/or column.
+          - 3. Change to a floating-point representation, and transform each
+               pixel from RGB color space into component video color space.
+          - 4. Pack each 2-by-2 block into a 32-bit word.
+          - 5. write the compressed binary image to standard output.
+
+        For decompression:
+
+          - 1. read in some binary image file and read the header.
+          - 2. create a Pnm_ppm image, set the width, height and denominator
+               based on the information in binary image.
+          - 3. Read each 32-bit code words in sequence.
+          - 4. For each code word, unpack the values a, b, c, d and P_B, P_R.
+          - 5. Use the inverse of the discrete cosine transform to compute Y_1,
+               Y_2, Y_3 and Y_4 from a, b, c, d.
+          - 6. For each pixel in the current 2-by-2 block, we have a
+               component-video representation of the color of pixel, then
+               transform the pixel from component-video color to RGB color.
+               Here we quantize the RGB values to integers in the range 0 to
+               255 and put the RGB   values into some Pnm_ppm image.
+          - 7. Print the Pnm_ppm image to standout.
+
+
+5. What data are in each subproblem?
+
+        For compression:
+
+          - 1. FILE *fp (retrieved from command line or stdin) is passed to
+               Pnm_ppmread which returns a Pnm_ppm image
+          - 2. Pnm_ppm image, its width and height members.
+          - 3. Create a new 2D array whose elements are some new structure yBR
+               which holds Y, P_b and P_R.
+          - 4. We have an 2D array whose elements are struct yBR. We also
+               need a new 2D array whose elements are 32-bit words. The 32-bit
+               words contain a, b, c, d, average P_B and average P_R.
+          - 5. 2D array of 32-bit words. Width and height of the 2D array.
+
+        For decompression:
+
+          - 1. Height and width. Some binary image file from command line or
+               stdin.
+          - 2. A new Pnm_ppm image whose 2D array has the width and height from
+               step 1. Denominator will also be chosen by some constraints.
+          - 3. input binary image and a 32-bit word which stores 4 bytes.
+          - 4. a, b, c, d and average P_B, P_R from the 32-bit word.
+          - 5. Y_1, Y_2, Y_3 and Y_4. a, b, c, d.
+          - 6. structure yBR, structure Pnm_rgb and Pnm_ppm image.
+          - 7. Pnm_ppm image.
+
+6. What code or algorithms go with that data?
+
+        For compression:
+
+          - 1. We will use the idiom "Reading from standard input or from one
+               or more files named on the command line", and then call
+               Pnm_ppmread() to read the image file.
+          - 2. We use modular operation to check whether width and height of
+               the image are even, if not, we plan to modify the width and/or
+               height in the Pnm_ppm structure.
+          - 3. We will create a new two dimensional array to hold the component
+               video color representation. We will map through each RGB pixel,
+               and for each pixel, we create a new structure which has three
+               members Y, Pb and Pr.
+                       Y  = 0.299 * R     + 0.587 * G    + 0.114 * B
+                       Pb = -0.168736 * R - 0.331264 * G + 0.5 * B
+                       Pr = 0.5 * R       -0.418688 * G  - 0.081312 * B
+          - 4. We will loop through our 2D array in block of 2. For each block,
+               we have four pixels and each pixel has three float numbers Y, Pb
+               , Pr. We use the discrete cosine transform(DCT) to transform the
+               four Y values of the pixels into cosine coefficients a, b, c and
+               d. Also we take the average values of Pb and Pr from the four
+               pixels. We use the Arith40_index_of_chroma(float x) to transform
+               average Pb and average Pr to 4-bit unsigned integers. For b, c
+               and b, we use the quantization technique to transform b, c, d
+               into 5-bit signed integers. For a, we multiply a by 511 and
+               round the result, so we can represent a as a 9-bit unsigned
+               scaled integer. Then we will use the Bitpack interface to pack
+               a, b, c, d, index(average Pb) and index(average Pr) to a 32-bit
+               word.
+          - 5. This step we just print our binary image to stdout.
+
+        For decompression:
+
+          - 1. We will use fscanf() and getc() to read in the binary image
+               file and to get the width and height from the header.
+          - 2. We will create a Pnm_ppm image, set the width, height based on
+               the information from step 1 and set a denominator based on
+               trial and error. Additionally, we will set .pixels to a 2D array
+               which holds RGB pixels.
+          - 3. Read each 32-bit code words in sequence.
+          - 4. For each code word, unpack the values a, b, c, d and P_B, P_R.
+          - 5. Use the inverse of the discrete cosine transform to compute Y_1,
+               Y_2, Y_3 and Y_4 from a, b, c, d.
+          - 6. For each pixel in the current 2-by-2 block, we have a
+               component-video representation of the color of pixel, then
+               transform the pixel from component-video color to RGB color.
+               Here we quantize the RGB values to integers in the range 0 to
+               255 and put the RGB   values into some Pnm_ppm image.
+          - 7. Print the Pnm_ppm image to standout.
+
+
+
+
+11. What are the major components of your program, and what are their
+    interfaces? Components include functions as well as abstract data types. An
+    interface includes contracts as well as function prototypes.
+
+    ***************************************************************************
+                                 compress40.c
+    -Abstract data types:
+
+     Pnm_ppm image - hold the width, height and rgb pixels.
+     UArray2_T ybr_rep - will hold the  YBR pixes.
+     UArray2_T binary_image - will hold the words from each 2 by 2 block.
+
+    -Functions:
+
+    FILE *open_or_abort(char *fname, char *mode) - the function from "Reading
+         from standard input or from one or more files named on the command
+         line"
+
+    void trim_image(Pnm_ppm image) - will trim the last row and/or column if
+          needed.
+
+    void convert_to_cvcs(Pnm_ppm image, int col, int row, void *elem, void *cl)
+      apply function that will convert a rgb pixel to a ybr representation.
+       The result will be placed in the closure which will be the UArray2_T
+       ybr_rep.
+
+    UArray2_T convert_to_words (UArray2_T ybr_rep) - Maps through ybr_rep in
+       blocks of two, converting the ybr values to a, b, c, d, average Pb and
+       average Pr, Using the bitpack interface to pack the resulting values
+       into 64 bit words. Each word will be truncated to 32 bits and then
+       stored into the UArray2_T binary_image.
+
+    void print_bin_image(UArray2_T binary_image) - prints binary image to
+     stdout
+
+
+    ***************************************************************************
+                                 decompress40.c
+     void read_header(FILE *fp, int *height, int *width) - parses the header
+        information from the input file. Sets PBR parameters height and width.
+
+     Pnmppm set_pnmppm(int height, int width) - Creates a pnmppm instance with
+        given height and width, sets the denominator, and allocates memory for
+        the pixel 2D array
+
+     void read_words(FILE *fp, pnmppm image) - uses a while loop to get(c) on
+         input file until EOF. Unpacks word using bitpack interface. Converts
+         chroma codes to average Pb and average Pr using
+         Arith40_index_of_chroma function. Uses index_to_brightness to get b,
+         c and d, uses int_to_a to get a. Call abcd_to_y to get Y values for
+         each pixel in the 2x2 block. Call ybr_to_rgb to get an rgb
+         representation of each pixel. Puts each rgb pixel into the pnmppm
+         image.
+
+    ***************************************************************************
+                                 bitpack.c
+    See PART B
+    ***************************************************************************
+                                 conversions.c
+
+    conversions.c will handle the computations necessary for image compression
+    and decompression.
+
+    -Abstract data types:
+
+      float array BRIGHTNESS_INTERVAL[31] = {-0.3, -0.20, -0.15, -0.10, -.09,
+       -0.077, -.066, -0.055, -.044, -0.033, -0.027, -.022, -0.017, -0.011,
+       -0.005, 0, 0.005, 0.011, 0.017, 0.022, 0.027, 0.033, 0.044, 0.055,
+       0.066, 0.077, 0.09, 0.10, 0.15, 0.20, 0.3}
+
+      integer array INTEGER_INTERVAL[31] = {-15, -14, -13, -12, -11, -10, -9,
+       -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+       , 13, 14, 15}
+
+      structure struct ybr {float y, float pb, float pr}
+      structure struct Y_of_block {float y1, float y2, float y3, float y4}
+      structure struct abcd {float a, float b, float c, float d}
+
+    -Functions:
+
+      float index_to_brightness(int find_index) - this will take an integer,
+          then find the index of find_index in INTEGER_INTERVAL, return the
+          value at that index in the BRIGHTNESS_INTERVAL.
+
+      int brightness_to_index(float brightness) - this will find the index of
+          the closest value to brightness in BRIGHTNESS_INTERVAL, and return
+          the value at that index in INTEGER_INTERVAL.
+
+      int a_to_int(float a) - multiply a by 511 and round. Return the result.
+
+      float int_to_a(int int_a) - cast int_a to a float number, then divide it
+          by 511. Return the result.
+
+      struct ybr rgb_to_ybr(struct Pnm_rgb rgb_pixel) - use the formula
+          described in 6.3 in DESIGN to convert the R, G, B values to Y, Pb and
+           Pr.
+
+      struct Pnm_rgb ybr_to_rgb(struct ybr ybr_pixel) - use the inverse
+          computation to convert the Y, Pb, Pr values to R, G and B.
+
+      struct Y_of_block abcd_to_y(struct abcd brightness_block) - use the
+          formula
+                           Y1 = a − b − c + d
+                           Y2 = a − b + c − d
+                           Y3 = a + b − c − d
+                           Y4 = a + b + c + d
+          to compute y values from a, b, c, d. Use y values to construct a
+          struct Y_of_block and return it.
+
+      struct abcd y_to_abcd(struct Y_of_block y) - use the formula
+                           a = (Y4 + Y3 + Y2 + Y1)/4.0
+                           b = (Y4 + Y3 − Y2 − Y1)/4.0
+                           c = (Y4 − Y3 + Y2 − Y1)/4.0
+                           d = (Y4 − Y3 − Y2 + Y1)/4.0
+          to compute a, b, c, d from Y values. Use a, b, c, d to construct a
+          struct abcd and return it.
+
+      float avg_P(float p1, float p2, float p3, float p4) - return (p1 + p2 +
+          p3 + p4)/4.0.
+  *****************************************************************************
+
+12. How do the components in your program interact?
+    That is, what is the architecture of your program?
+
+    In image40.c, if the input argument is -c, we will call the functions
+    inside compress40.c and if the input argument is -d we will call the
+    functions inside decompress40.c. Both compress40 and decompress40 will use
+    functions in conversions.c to do necessary computations. They will both
+    also use functions in bitpack.c to pack and unpack words.
+
+
+
+13. What test cases will you use to convince yourself that your program works?
+
+
+TESTING PLAN FOR conversions.c:
+
+      float index_to_brightness(10) should return 0.077
+      float index_to_brightness(15) should return 0.3
+      float index_to_brightness(16) should cause checked runtime error. The
+           integer is not in INTEGER_INTERVAL.
+      float index_to_brightness(-12) should return -0.10.
+
+      int brightness_to_index(-0.35) should return -15
+      int brightness_to_index(-0.30) should return -15
+      int brightness_to_index(-0.16) should return -13
+      int brightness_to_index(0.35) should return 15
+      int brightness_to_index(0.30) should return 15
+      int brightness_to_index(0.06) should return 8
+
+
+      int a_to_int(0.958) should return 490.
+      int a_to_int(0.1234456231234552) should return 64.
+      int a_to_int(0.99999999) should return 511.
+      int a_to_int(0.0000001) should return 1.
+      int a_to_int(0.0) should return 0.
+      int a_to_int(1.0) should return 511.
+      int a_to_int(-0.01) should cause checked runtime error.
+      int a_to_int(1.01) should cause checked runtime error.
+
+      float int_to_a(1) should return 0.00195695
+      float int_to_a(0) should return 0.0
+      float int_to_a(511) should return 1.0
+      float int_to_a(31) should return 0.06066536
+
+      Pnm_rgb rgb_pixel = {.red = .43, .green = .66, .blue = .25}
+
+
+      rgb_to_ybr(rgb_pixel) - should return a ybr struct with members
+       y ==  .54449, pb == -.16619072, -.08166208
+
+      struct ybr ybr_pixel = {.y = .54449, .pb = -.16619072, .pr = -.08166208}
+      ybr_to_rgb(ybr_pixel) - should return a pnm_rgb struct with members
+       red == .43, green == .66, blue == .25
+
+      struct abcd brightness block = {.a = .7, .b = -.11, .c = .008, .d = .099}
+      abcd_to_y(brightness_block) - should return struct y with members
+       y1 == 0.829, y2 == 0.791, y3 == 0.411, y4 == 0.769
+
+      struct Y_of_block y = {.y1 = .829, y2 = .791, y3 = .411, y4 = .769}
+      y_to_abcd(y) - should return a struct abcd with members
+       a == .7, b == -.11, c == .008, d == .099
+
+      float avg_P(.155, -.22, .091, -.044) - should return -.018
+
+
+TESTING PLAN FOR compress40.c
+
+   trim_image(Pnm_ppm image) - if image.width % 2 == 1, then image.width
+      should == image.width -1, if image.height % 2 == 1, then image.height
+      should == image.height -1.
+
+   convert_to_cvcs(Pnm_ppm image, int col, int row, void *elem, void *cl) -
+      the UArray2_T passed into the closure should have ybr elements after
+      mapping is performed
+
+   UArray2_T word_array = convert_to_words (UArray2_T ybr_rep) -
+
+TESTING PLAN FOR decompress40.c
+
+   read_header(fp, &height, &width) - height and width should
+      be non-negative even integers.
+
+  Pnmppm image = set_pnmppm(10, 10) - should return a Pnmppm image with
+      height and width of 10, a denominator and a rgb pixel array
+
+  read_words(*fp, image) - after calling read_words, image.pixels should have
+      rgb elements
+
+TESTING PLAN FOR bitpack.c
+
+  See PART B
+
+
+
+*******************************************************************************
+*                                   PART B                                    *
+*******************************************************************************
+bitpack.c will pack multiple fields into a single 64-bit word and perform these
+kinds of computations.
+
+-Abstract data types:
+    Except_T Bitpack_Overflow - If Bitpack news is given a value that does not
+    fit in width signed bits, it must raise the exception Bitpack Overflow.
+
+-Functions:
+    bool Bitpack_fitsu(uint64_t n, unsigned width) - This function will test
+        whether the unsigned integer n can be represented in width bits.
+
+    bool Bitpack_fitss(int64_t n, unsigned width) - This function will test
+        whether the signed integer n can be represented in width bits.
+
+    uint64_t Bitpack_getu(uint64_t word, unsigned width, unsigned lsb) - This
+        function will extract a unsigned value from a unsigned word given the
+        width of the field and the location of the field’s least significant
+        bit.
+
+    int64_t Bitpack_gets(uint64_t word, unsigned width, unsigned lsb) - This
+        function will extract a signed value from a unsigned word given the
+        width of the field and the location of the field’s least significant
+        bit.
+
+    uint64_t Bitpack_newu(uint64_t word, unsigned width, unsigned lsb,
+            uint64_t value) - this function will return a new word which is
+            identical to the original word, except that the field of width with
+            least significant bit at lsb will have been replaced by a width bit
+            representation of unsigned value.
+
+    uint64_t Bitpack_news(uint64_t word, unsigned width, unsigned lsb,
+            int64_t value) - this function will return a new word which is
+            identical to the original word, except that the field of width with
+            least significant bit at lsb will have been replaced by a width bit
+            representation of signed value.
+
+  Testing plan:
+
+  1. call Bitpack_fitsu(n, m) -
+          if 0 <= n <= 15, and m == 4, should return true, all other values of
+          n should return false.
+
+          if 0 <= n <= 31, and m == 5, should return true, all other values of
+          n should return false.
+
+          if m == 0, all values of n should return false.
+
+  2. Bitpack_fitss(n, m)
+          if -8 <= n <= 7, and m == 4, should return true,
+          all other values of n should return false
+
+          if -16 <= n <= 15, and m == 5, should return true,
+          all other values of n should return false
+
+          if m == 0, all values of n should return false.
+
+  3.  Bitpack_getu(oxD59, 3, 5) should return 2.
+      Bitpack_getu(oxDD9, 3, 5) should return 6.
+      Bitpack_getu(oxD59, 0, 5) should return 0.
+      Bitpack_getu(oxD59, -2, 5) should cause checked runtime error.
+      Bitpack_getu(oxD59, 65, 5) should cause checked runtime error.
+      Bitpack_getu(oxD59, 61, 5) should cause checked runtime error.
+
+  4.  Bitpack_gets(oxD59, 3, 5) should return 2.
+      Bitpack_gets(oxDD9, 3, 5) should return -2.
+      Bitpack_gets(oxD59, 0, 5) should return 0.
+      Bitpack_gets(oxD59, -2, 5) should cause checked runtime error.
+      Bitpack_gets(oxD59, 65, 5) should cause checked runtime error.
+      Bitpack_gets(oxD59, 61, 5) should cause checked runtime error.
+
+  5.  uint64_t Bitpack_newu(0xD95F, 5, 4, 6) should return 55407.
+      uint64_t Bitpack_newu(0xD95F, 0, 4, 6) should return 55647.
+      uint64_t Bitpack_newu(0xD95F, -1, 4, 6) should cause checked runtime
+      error.
+
+      uint64_t Bitpack_newu(0xD95F, 65, 4, 6) should cause checked runtime
+      error.
+
+      uint64_t Bitpack_newu(0xD95F, 61, 4, 6) should cause checked runtime
+      error.
+
+      uint64_t Bitpack_newu(0xD95F, 2, 4, 8) should raise the exception Bitpack
+      Over flow.
+
+  6.  uint64_t Bitpack_news(0xD95F, 5, 4, -6) should return 55727.
+      uint64_t Bitpack_news(0xD95F, 0, 4, -6) should return 55647.
+      uint64_t Bitpack_news(0xD95F, 5, 4, 6) should return 55407.
+      uint64_t Bitpack_news(0xD95F, -1, 4, 6) should cause checked runtime
+      error.
+
+      uint64_t Bitpack_news(0xD95F, 65, 4, 6) should cause checked runtime
+      error.
+
+      uint64_t Bitpack_news(0xD95F, 61, 4, 6) should cause checked runtime
+      error.
+
+      uint64_t Bitpack_newu(0xD95F, 2, 4, -3) should raise the exception
+      Bitpack Over flow.
+
+  7. Bitpack_getu(Bitpack_newu(0xD95F, 5, 4, 6), 5, 4) == 6
+     Bitpack_getu(Bitpack_newu(0xD95F, 5, 4, 6), 3, 3) == Bitpack_getu(0xD95F,
+                                                                     3, 3)

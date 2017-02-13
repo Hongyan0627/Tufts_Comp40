@@ -1,0 +1,13 @@
+// Comp40 Homework 8
+// By: Josie Barth and Hongyan Wang
+// April 23rd 2016
+
+############################################################################
+#       start program
+############################################################################
+.section init
+        .temps r6, r7
+        
+.section init
+                goto main linking r1
+                halt

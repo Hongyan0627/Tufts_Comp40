@@ -1,0 +1,21 @@
+###################################################################
+COMP 40 Homework 1
+By: Hongyan Wang and Derick Yang
+Date: February 4, 2016
+###################################################################
+
+Included files:
+README
+brightness.c: takes filename or standard input in a portable graymap,
+and outputs the average brightness of the file
+readaline.c: a function that reads a line from a file
+simlines.c: a program to print the similar lines given a number of 
+filenames
+
+Acknowledgements: We received help from TA's, including Peter, Charlie,
+and Aditya. We used Hanson's book for documentation on data structures.
+
+We believe everything has been implemented correctly.
+
+Time spent: We estimate that we spent approximately 12 hours on this
+assignment.

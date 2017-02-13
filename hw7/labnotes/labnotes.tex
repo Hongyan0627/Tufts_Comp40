@@ -1,0 +1,72 @@
+\documentclass[fleqn]{article}
+\title{\vspace{-5ex} Homework 7 Labnotes}
+\author{Peter Vondras \& Hongyan Wang}
+\usepackage{multicol}
+\usepackage{enumitem}
+\setlength{\parskip}{0pt}
+\usepackage{tikz}
+\usetikzlibrary{patterns,snakes}
+\usepackage{geometry}
+\geometry{
+	letterpaper,
+%	total={210mm,297mm},
+	left=25.4mm,
+	right=20mm,
+	top=25.4mm,
+	bottom=25.4mm,
+}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\date{\vspace{-6ex}}
+\raggedright
+
+\newcommand{\sub}[1]{\subsubsection*{#1}} 
+\newcommand{\tab}{\hspace{10mm}} 
+
+\usepackage[english]{babel} % used for table
+
+\begin{document}
+\maketitle
+\hspace{0mm}
+
+\begin{center}
+    \begin{tabular}{ l  l  l  l l l l }
+    \hline
+    \textit{ID} & \textit{Benchmark} & \textit{Time(s)} & \textit{Instructions} & \textit{Rel to start} & \textit{Rel to prev} & \textit{Improvement} \\ \hline
+    db9b508 & Midmark   & 3.498  & $2.507*10^{10}$ & 1.000 & 1.000 & starting point \\ 
+       & Adventure & 29.278 & $2.097*10^{11}$ & 1.000 & 1.000 & \\
+       & Sandmark  & 86.711 & $6.224*10^{11}$ & 1.000 & 1.000 & \\ \hline 
+    db9b508 & Midmark   & 2.068  & $1.930*10^{10}$ & 0.591 & 0.591 & Compiled with optimization \\ 
+       & Adventure & 17.969 & $1.637*10^{11}$ & 0.614 & 0.614 & turned on and linked against\\
+       & Sandmark  & 51.162 & $4.792*10^{11}$ & 0.590 & 0.590 & -lcii-01 \\ \hline 
+    db9b508 & Midmark   & 1.97   & $1.904*10^{10}$ & 0.563 & 0.953 & Compiled with optimization \\ 
+       & Adventure & 17.04  & $1.622*10^{11}$ & 0.582 & 0.948 & turned on and linked against \\
+       & Sandmark  & 48.71  & $4.727*10^{11}$ & 0.562 & 0.952 & -lcii-02 \\ \hline 
+    005d1be & Midmark   & 0.863  & $5.221*10^{9}$ & 0.247 & 0.438 & replaced set\_ra\_rb\_rc() and \\ 
+       & Adventure & 7.320 & $3.508*10^{10}$ & 0.250 & 0.430 & set\_ra\_val() with bitshifting \\
+       & Sandmark  & 22.104 & $1.292*10^{11}$ & 0.255 & 0.454 & macros which eliminated Bitpack\\ 
+       &   &  &  &  &  & abstraction. \\ \hline 
+   	060d711 & Midmark   & 0.684 & $3.901*10^{9}$ & 0.196 & 0.793 & Removed unnecessary size check \\ 
+       & Adventure & 6.496 & $2.804*10^{10}$ & 0.222 & 0.887 & from Seg\_get\_address(). \\
+       & Sandmark  & 16.705 & $9.648*10^{10}$ & 0.193 & 0.756 & This was not necessary per spec. \\ \hline 
+    6f9c9f2 & Midmark   & 0.637 & $3.645*10^{9}$ & 0.182 & 0.931 & Removed bounds check in \\ 
+       & Adventure & 5.662 & $2.542*10^{10}$ & 0.193 & 0.872 & run\_um() for loop by adding \\
+       & Sandmark  & 15.530 & $9.010*10^{10}$ & 0.179 & 0.930 & halt command to the end of\\
+       &   &  &  &  &  & all programs that are loaded. \\ \hline 
+    9d1b073 & Midmark   & 0.486 & $2.663*10^{9}$ & 0.139 & 0.763 & Removed Hanson's Seq\_t \\ 
+       & Adventure & 4.868 & $2.089*10^{10}$ & 0.166 & 0.860 & for a simple dynamicly expanding\\
+       & Sandmark  & 11.880 & $6.565*10^{10}$ & 0.137 & 0.765 & array. \\ \hline 
+    48fa4df & Midmark   & 0.420 & $2.165*10^{9}$ & 0.120 & 0.864 & Performed switch statement in same \\ 
+       & Adventure & 4.713 & $1.687*10^{10}$ & 0.161 & 0.968 & function as main for loop allowing all\\
+       & Sandmark  & 10.204 & $5.328*10^{10}$ & 0.118 & 0.859 & variables to be local.\\ \hline 
+
+
+    \end{tabular}
+\end{center}
+
+NOTE: ID column is a unique identifier which allows us to go to the program state of any listed step using git. The first three steps are using the same ID as they were identical sans compilation links.
+
+
+\end{document}
