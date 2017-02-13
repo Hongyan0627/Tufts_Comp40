@@ -2,6 +2,6 @@ This repo contains my solutions to Tufts comp40 Machine Structure and Assembly L
 
 In this course, we learned pair programming. So All the assignments are finished by me and my partner. (We have different partner for different assignments).
 
-Note: You should not see my solutions if you are taking comp40 or you plan to. You will learn a lot by doing these assignments with your parter. 
+Note: You should not see my solutions if you are taking comp40 or you plan to. You will learn a lot by doing these assignments with your partner. 
 
-You can find more information about this course http://www.cs.tufts.edu/comp/40/
+You can find more information about this course here http://www.cs.tufts.edu/comp/40/
